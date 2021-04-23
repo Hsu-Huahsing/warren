@@ -207,7 +207,7 @@ if __name__ == '__main__' :
     # 開始分為stock 和 market兩種方式來儲存==========================
                 if isinstance(df.index,pd.DatetimeIndex) == False :
                     for p in df.index.unique():
-                        print(p)
+                        print("\r{}".format(p),end="")
                         newdf = df.loc[df.index.isin([p]),:]
                         if isinstance(m.findstock(io=p),pd.Series) == True:
                             p=m.findstock(io=p)
