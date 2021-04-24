@@ -1,2 +1,0 @@
-print("iiiii")
-p="eee"
