@@ -29,9 +29,10 @@ log = m.log
 itemcol = m.get_item(title=False)
 itemzip = m.dataforparse(col_include=itemcol,time=True)
 
-key_dict = {"col"  :["field"],
-            "value":["data","list"],
-            "title":["title"]
+key_dict = {
+    "col"  :["field"],
+    "value":["data","list"],
+    "title":["title"]
             }
 
 errordict = {
