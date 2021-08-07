@@ -6,38 +6,21 @@ Created on Fri May 22 23:22:32 2020
 @author: mac
 """
 import configuration as cf
-import sys
-import shutil
-from os import path,walk
+from os import path, walk
 # sys.path.insert(0,path.dirname(__file__))
-from steventricks.file import picklesave,pickleload,path_walk,data_renew,make_url,dataframe_zip
-from steventricks.date import datefromstr,istime,datefromsplit
-from steventricks.value import turntofloat,dfappend
-from traceback import format_exc
+from steventricks.mighty import picklesave, pickleload, path_walk,data_renew, make_url, dataframe_zip
 # print(__main__)
 # print(__package__)
 # print(sys.path)
 import requests as re
-import pandas as pd
-import numpy as np
 # import json
 from datetime import datetime
-from packet import crawlerdic,crawlerdictodf
+from packet import crawlerdic, crawlerdictodf, multilisforcrawl, stocktablecrawl
+import pandas as pd
 from multiprocessing import Pool
+from traceback import format_exc
+import sys
 now = datetime.now().date()
-
-def show_info(Path="", data=None):
-    if path.exists(Path) == False :
-        print(Path)
-        print(r"No olderlog")
-    else:
-        print(r"OlderLog Information ============")
-        print(r"Created in ",pd.to_datetime(path.getctime(Path),unit="s"))
-        print(r"Last modified in ",pd.to_datetime(path.getmtime(Path),unit="s"))
-        if data is None : data = pickleload(Path)
-        print(r"There are data existing through out {b} to {e}".format(b=data.index.min().date(),e=data.index.max().date()))
-        print("OlderLog Information End ========")
-    return
 
 def parser(crawlerdic={},timeout=180 ):
 # example : date == "2020-3-10"
@@ -105,61 +88,49 @@ def parser(crawlerdic={},timeout=180 ):
     crawlerdic["stat"]    = str(datetime.now().date())
     return crawlerdic
 
-# In[]
-
+# market == stock > item > title
 class management(object):
-    olderlog_path  = path.join(cf.cloud_path,"log.pkl")
-    warehouse_path = path.join(cf.cloud_path,"warehouse")
-    olderlog_file  = pickleload(olderlog_path)
-    stocktable     = pickleload(path.join(cf.cloud_path,r"stocktable.pkl"))
+    log_path  = path.join(cf.cloud_path, "log.pkl")
+    warehouse_path = path.join(cf.cloud_path, "warehouse")
+    stocktable     = pickleload(path.join(cf.cloud_path, r"stocktable.pkl"))
     crawldic       = crawlerdic
-    log            = crawlerdictodf(title="sim")
-    mall           = set([ _["m"] for _ in crawldic.values() ])
-    itemall        = [_ for _ in crawldic ]
+    log            = crawlerdictodf()
+    mall           = set([_["m"] for _ in crawldic.values()])
+    itemall        = [_ for _ in crawldic]
     titleall       = [i for i in crawldic.values() for i in i["title"]]
 
-    def __init__(self,start=None ,end=None, loginit=False) :
+    def __init__(self, start=None, end=None):
         self.start = start
         self.end   = end
-        self.log   = self.log.loc[self.start:self.end,:]
-        # print(self.log)
+        self.log   = self.log.loc[self.start:self.end, :]
         print(r"Renewing the log ... ")
-        if loginit == True :
-            self.log.loc[:,self.itemall] = data_renew(self.log.loc[:,self.itemall],self.olderlog_file)
-            for _ in self.mall:
-                shutil.rmtree(path.join(self.warehouse_path, _, r"product"),ignore_errors=True)
-        elif loginit == False:
-            self.log = data_renew(self.log,self.olderlog_file)
-        show_info(self.olderlog_path,self.olderlog_file)
-    
+        self.log.loc[:, self.itemall] = data_renew(self.log.loc[:, self.itemall],pickleload(self.log_path))
+        
     def get_item(self, item=[] ,title="sim"):
         item = [_ for _ in item if _ in self.mall]
         if not item : item = self.mall
         res = [_ for _ in self.crawldic if self.crawldic[_]["m"] in item]
         t = [_ for _ in res for _ in self.crawldic[_]["title"]]
-        if title =="sim" :
+        if title == "sim":
             return res + t
-        elif title == "only" :
+        elif title == "only":
             return t
-        elif title == False:
+        elif title is False:
             return res
         else :
             print("wrong title string")
             return None
         
-    def dataforparse(self,key_include=[],key_exclude=[],col_include=[],col_exclude=[],time=False):
-        return dataframe_zip(df=self.log,col_include=col_include,col_exclude=col_exclude,key_include=key_include,key_exclude=key_exclude,time=time)
-
     def clearner_lis(self, item=[]):
-        if isinstance(item, list) == False : 
-            print("Input error, item must be list.")
+        if isinstance(item, list) is False:
+            print("Input error, item must be list")
             return None
-        elif not item : item = self.crawldic.keys()
+        elif not item: item = self.crawldic.keys()
         p = self.warehouse_path
-        res=[]
+        res = []
         for k in item:
             temp = next(walk(path.join(p, self.crawldic[k]["m"], k)))[2]
-            if not temp : continue
+            if not temp: continue
             res += temp
         return res
     
@@ -175,7 +146,48 @@ class management(object):
         return temp["代號"]+"_"+temp["名稱"]
 
 # In[]
-if __name__ == "__main__" :
-    # m=management()
-    # a=m.olderlog_file
-    pass
+if __name__ == "__main__":
+    stocktable_renew = True
+    m = management()
+    m.mall
+    log = m.log
+    parse_col = m.get_item(title=False)
+    crawldata = dataframe_zip(df=log, col_include=parse_col, key_include=["wait"], time=False)
+    # "badconnection","closed","jsonerror"
+    multilis = multilisforcrawl(crawldata)
+    if stocktable_renew == True:
+        stocktable = stocktablecrawl(timeout=60)
+        picklesave(path.join(cf.cloud_path, "stocktable.pkl"), stocktable, repl=True)
+    # In[]
+    try:
+        with Pool() as p:
+            for res in p.imap_unordered(parser, multilis):
+                if "errormessage" in res:
+                    print(res["stat"])
+                    print(res["errormessage"])
+                elif "date" in res["data"]:
+                    print("資料日期 ==> ", res["data"]["date"])
+                else:
+                    print(res["stat"])
+                
+                log.loc[log[res["item"]].index == res["crawldate"], res["item"]] = res["stat"]
+                print(log.loc[log[res["item"]].index == res["crawldate"], res["item"]])
+                # log=c.olderlog_file
+                # c.olderlog_file.loc["2013-3-21","三大法人買賣金額統計表"]=None
+                picklesave(m.log_path, log, repl=True)
+                print("Log renewed .")
+            # break
+    except KeyboardInterrupt:
+        picklesave(m.log_path, log, repl=True)
+        print("KeyboardInterrupt ... content saving")
+        print("Log saved .")
+        sys.exit()
+    except Exception as e:
+        print("===============")
+        print(format_exc())
+        print("Unknowned error")
+        print(e)
+        picklesave(m.log_path, log, repl=True)
+        print("Log saved .")
+        sys.exit()
+

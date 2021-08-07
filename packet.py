@@ -7,7 +7,7 @@ Created on Mon Jul 20 21:13:14 2020
 """
 import configuration as cf
 import random
-from steventricks.file import make_url,data_renew
+from steventricks.mighty import make_url,data_renew
 from copy import deepcopy
 from datetime import datetime
 import pandas as pd
@@ -200,7 +200,7 @@ def multilisforcrawl(itemlis=[],crawldic=crawlerdic):
         res.append(crawl)
     return res
 
-def crawlerdictodf(title="only",defaultstr="wait"):
+def crawlerdictodf(defaultstr="wait"):
     def makeseries(col="",start="",end=now,freq="",pendix="",defaultstr=defaultstr):
         d = pd.date_range(start=start, end=end, freq=freq)
         d = d.append(pd.DatetimeIndex([now]))
@@ -209,13 +209,7 @@ def crawlerdictodf(title="only",defaultstr="wait"):
         return s
     reslis = []
 
-    if title == "sim":
-        for key in crawlerdic :
-            reslis.append(makeseries(col=key,start=crawlerdic[key]["date_min"],freq=crawlerdic[key]["freq"]))
-
-    if title == "sim" or title == "only":
-        for key in crawlerdic :
-            # print(key)
+    for key in crawlerdic :
             for title in crawlerdic[key]["title"]:
                 reslis.append(makeseries(col=title,start=crawlerdic[key]["date_min"],freq=crawlerdic[key]["freq"],pendix=""))
 
@@ -224,5 +218,5 @@ def crawlerdictodf(title="only",defaultstr="wait"):
 
 if __name__ == '__main__' :
     l=[]
-    # l = crawlerdictodf(title="sim")
+    # l = crawlerdictodf()
     # l.loc[None:"2020-4",["i每日收盤行情"]]
