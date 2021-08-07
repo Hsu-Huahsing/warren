@@ -81,7 +81,9 @@ def parser(crawlerdic={},timeout=180 ):
     jsontext["item"]      = item
     jsontext["crawldate"] = crawldate
     jsontext["m"]         = m
-    savepath              = path.join(cf.cloud_path, r"warehouse", item,"{}_{}".format(item,crawldate))
+    savepath              = path.join(cf.cloud_path, r"warehouse", item,
+                                      str(pd.to_datetime(crawldate).year),
+                                      "{}_{}".format(item,crawldate))
     picklesave(savepath,jsontext,repl=True)
     
     crawlerdic["data"]    = jsontext
@@ -90,12 +92,12 @@ def parser(crawlerdic={},timeout=180 ):
 
 # market == stock > item > title
 class management(object):
-    log_path       = path.join(cf.cloud_path, "log.pkl")
+    log_path         = path.join(cf.cloud_path, "log.pkl")
     warehouse_path = path.join(cf.cloud_path, "warehouse")
-    stocktable     = pickleload(path.join(cf.cloud_path, r"stocktable.pkl"))
-    log            = crawlerdictodf()
-    mall           = set([_["m"] for _ in crawlerdic.values()])
-    itemall        = ["{}_{}".format(crawlerdic[_]["m"], _) for _ in crawlerdic]
+    stocktable        = pickleload(path.join(cf.cloud_path, r"stocktable.pkl"))
+    log                = crawlerdictodf()
+    mall              = set([_["m"] for _ in crawlerdic.values()])
+    item              = [_ for _ in crawlerdic]
     # titleall       = [i for i in crawldic.values() for i in i["title"]]
 
     def __init__(self, start=None, end=None):
@@ -104,23 +106,7 @@ class management(object):
         self.log   = self.log.loc[self.start:self.end:]
         print(r"Renewing the log ... ")
         if path.exists(self.log_path) is True:
-            self.log.loc[:, self.itemall] = data_renew(self.log.loc[:, self.itemall],pickleload(self.log_path))
-            
-        
-    def get_item(self, item=[] ,title="sim"):
-        item = [_ for _ in item if _ in self.mall]
-        if not item : item = self.mall
-        res = [_ for _ in self.crawldic if self.crawldic[_]["m"] in item]
-        t = [_ for _ in res for _ in self.crawldic[_]["title"]]
-        if title == "sim":
-            return res + t
-        elif title == "only":
-            return t
-        elif title is False:
-            return res
-        else :
-            print("wrong title string")
-            return None
+            self.log.loc[:, self.item] = data_renew(self.log.loc[:, self.item],pickleload(self.log_path))
         
     def clearner_lis(self, item=[]):
         if isinstance(item, list) is False:
@@ -154,7 +140,8 @@ if __name__ == "__main__":
     m.mall
     log = m.log
     parse_col = m.get_item(title=False)
-    crawldata = dataframe_zip(df=log, col_include=parse_col, key_include=["wait"], time=False)
+    crawldata = dataframe_zip(df=log, col_include=m.itemall, key_include=[
+        "wait"], time=False)
     # "badconnection","closed","jsonerror"
     multilis = multilisforcrawl(crawldata)
     if stocktable_renew == True:
