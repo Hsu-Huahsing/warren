@@ -90,14 +90,14 @@ def parser(crawlerdic={},timeout=180 ):
 
 # market == stock > item > title
 class management(object):
-    log_path  = path.join(cf.cloud_path, "log.pkl")
+    log_path       = path.join(cf.cloud_path, "log.pkl")
     warehouse_path = path.join(cf.cloud_path, "warehouse")
     stocktable     = pickleload(path.join(cf.cloud_path, r"stocktable.pkl"))
     crawldic       = crawlerdic
     log            = crawlerdictodf()
     mall           = set([_["m"] for _ in crawldic.values()])
     itemall        = [_ for _ in crawldic]
-    titleall       = [i for i in crawldic.values() for i in i["title"]]
+    # titleall       = [i for i in crawldic.values() for i in i["title"]]
 
     def __init__(self, start=None, end=None):
         self.start = start
@@ -147,7 +147,7 @@ class management(object):
 
 # In[]
 if __name__ == "__main__":
-    stocktable_renew = True
+    stocktable_renew = False
     m = management()
     m.mall
     log = m.log
