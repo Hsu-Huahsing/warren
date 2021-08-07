@@ -93,18 +93,19 @@ class management(object):
     log_path       = path.join(cf.cloud_path, "log.pkl")
     warehouse_path = path.join(cf.cloud_path, "warehouse")
     stocktable     = pickleload(path.join(cf.cloud_path, r"stocktable.pkl"))
-    crawldic       = crawlerdic
     log            = crawlerdictodf()
-    mall           = set([_["m"] for _ in crawldic.values()])
-    itemall        = [_ for _ in crawldic]
+    mall           = set([_["m"] for _ in crawlerdic.values()])
+    itemall        = ["{}_{}".format(crawlerdic[_]["m"], _) for _ in crawlerdic]
     # titleall       = [i for i in crawldic.values() for i in i["title"]]
 
     def __init__(self, start=None, end=None):
         self.start = start
         self.end   = end
-        self.log   = self.log.loc[self.start:self.end, :]
+        self.log   = self.log.loc[self.start:self.end:]
         print(r"Renewing the log ... ")
-        self.log.loc[:, self.itemall] = data_renew(self.log.loc[:, self.itemall],pickleload(self.log_path))
+        if path.exists(self.log_path) is True:
+            self.log.loc[:, self.itemall] = data_renew(self.log.loc[:, self.itemall],pickleload(self.log_path))
+            
         
     def get_item(self, item=[] ,title="sim"):
         item = [_ for _ in item if _ in self.mall]
@@ -147,6 +148,7 @@ class management(object):
 
 # In[]
 if __name__ == "__main__":
+    a=pickleload(path.join(cf.cloud_path, "log.pkl"))
     stocktable_renew = False
     m = management()
     m.mall
