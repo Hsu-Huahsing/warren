@@ -17,14 +17,14 @@ from traceback import format_exc
 import sys
 now = datetime.now().date()
 
-def parser(crawlerdic={},timeout=180 ):
+def parser(crawlerdic={},timeout=20 ):
 # example : date == "2020-3-10"
     crawldate = crawlerdic["crawldate"]
-    item      = crawlerdic["item"]
-    url       = crawlerdic["url"]
-    header    = crawlerdic["header"]
-    payload   = crawlerdic["payload"]
-    m         = crawlerdic["m"]
+    item         = crawlerdic["item"]
+    url           = crawlerdic["url"]
+    header      = crawlerdic["header"]
+    payload    = crawlerdic["payload"]
+    m               = crawlerdic["m"]
     
 # debug for date =====================================================
     try:
@@ -79,7 +79,7 @@ def parser(crawlerdic={},timeout=180 ):
     savepath              = path.join(cf.cloud_path, r"warehouse", item,
                                       str(pd.to_datetime(crawldate).year),
                                       "{}_{}".format(item,crawldate))
-    picklesave(savepath,jsontext,repl=True)
+    picklesave(savepath,jsontext,cover=True)
     
     crawlerdic["data"]    = jsontext
     crawlerdic["stat"]    = str(datetime.now().date())
@@ -102,9 +102,6 @@ class management(object):
         print(r"Renewing the log ... ")
         if path.exists(self.log_path) is True:
             old = pickleload(self.log_path)
-            print(self.log.loc[:, self.item])
-            print(old.loc[:,self.item].columns)
-            print(self.item)
             self.log.loc[:, self.item] = data_renew(self.log.loc[:, self.item],old.loc[:,self.item])
         
     def clearner_lis(self, item=[]):
@@ -138,7 +135,7 @@ if __name__ == "__main__":
     m = management()
     m.mall
     log = m.log
-    crawldata = dataframe_zip(df=log, col_include=m.itemall, key_include=["wait"], time=False)
+    crawldata = dataframe_zip(df=log, col_include=m.item, key_include=["wait"], time=False)
     # "badconnection","closed","jsonerror"
     multilis = multilisforcrawl(crawldata)
     if stocktable_renew == True:
@@ -146,25 +143,24 @@ if __name__ == "__main__":
         picklesave(path.join(cf.cloud_path, "stocktable.pkl"), stocktable, repl=True)
     # In[]
     try:
-        with Pool() as p:
-            for res in p.imap_unordered(parser, multilis):
-                if "errormessage" in res:
-                    print(res["stat"])
-                    print(res["errormessage"])
-                elif "date" in res["data"]:
-                    print("資料日期 ==> ", res["data"]["date"])
-                else:
-                    print(res["stat"])
-                
-                log.loc[log[res["item"]].index == res["crawldate"], res["item"]] = res["stat"]
-                print(log.loc[log[res["item"]].index == res["crawldate"], res["item"]])
-                # log=c.olderlog_file
-                # c.olderlog_file.loc["2013-3-21","三大法人買賣金額統計表"]=None
-                picklesave(m.log_path, log, repl=True)
-                print("Log renewed .")
-            # break
+        for payload in multilis:
+            print("crawling {}_{}".format(payload["crawldate"],payload["item"]))
+            res = parser(payload)
+            if "errormessage" in res:
+                print(res["stat"])
+                print(res["errormessage"])
+            elif "date" in res["data"]:
+                print("資料日期 ==> ", res["data"]["date"])
+            else:
+                print(res["stat"])
+            
+            log.loc[log[res["item"]].index == res["crawldate"], res["item"]] = res["stat"]
+            print(log.loc[log[res["item"]].index == res["crawldate"], res["item"]])
+            picklesave(m.log_path, log, cover=True)
+            print("Log renewed .")
+        # break
     except KeyboardInterrupt:
-        picklesave(m.log_path, log, repl=True)
+        picklesave(m.log_path, log, cover=True)
         print("KeyboardInterrupt ... content saving")
         print("Log saved .")
         sys.exit()
@@ -173,7 +169,7 @@ if __name__ == "__main__":
         print(format_exc())
         print("Unknowned error")
         print(e)
-        picklesave(m.log_path, log, repl=True)
+        picklesave(m.log_path, log, cover=True)
         print("Log saved .")
         sys.exit()
 

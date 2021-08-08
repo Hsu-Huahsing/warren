@@ -210,8 +210,9 @@ def crawlerdictodf(defaultstr="wait"):
     reslis = []
 
     for key in crawlerdic :
-            for title in crawlerdic[key]["title"]:
-                reslis.append(makeseries(col=title,start=crawlerdic[key]["date_min"],freq=crawlerdic[key]["freq"],pendix=""))
+        reslis.append(makeseries(col=key, start=crawlerdic[key]["date_min"], freq=crawlerdic[key]["freq"], pendix=""))
+            # for title in crawlerdic[key]["title"]:
+            #     reslis.append(makeseries(col=title,start=crawlerdic[key]["date_min"],freq=crawlerdic[key]["freq"],pendix=""))
 
     return pd.concat(reslis,axis=1)
 
