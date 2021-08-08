@@ -7,13 +7,8 @@ Created on Fri May 22 23:22:32 2020
 """
 import configuration as cf
 from os import path, walk
-# sys.path.insert(0,path.dirname(__file__))
 from steventricks.mighty import picklesave, pickleload, path_walk,data_renew, make_url, dataframe_zip
-# print(__main__)
-# print(__package__)
-# print(sys.path)
 import requests as re
-# import json
 from datetime import datetime
 from packet import crawlerdic, crawlerdictodf, multilisforcrawl, stocktablecrawl
 import pandas as pd
@@ -92,12 +87,12 @@ def parser(crawlerdic={},timeout=180 ):
 
 # market == stock > item > title
 class management(object):
-    log_path         = path.join(cf.cloud_path, "log.pkl")
+    log_path            = path.join(cf.cloud_path, "log.pkl")
     warehouse_path = path.join(cf.cloud_path, "warehouse")
-    stocktable        = pickleload(path.join(cf.cloud_path, r"stocktable.pkl"))
-    log                = crawlerdictodf()
-    mall              = set([_["m"] for _ in crawlerdic.values()])
-    item              = [_ for _ in crawlerdic]
+    stocktable         = pickleload(path.join(cf.cloud_path, r"stocktable.pkl"))
+    log                     = crawlerdictodf()
+    mall                   = set([_["m"] for _ in crawlerdic.values()])
+    item                   = [_ for _ in crawlerdic]
     # titleall       = [i for i in crawldic.values() for i in i["title"]]
 
     def __init__(self, start=None, end=None):
@@ -106,7 +101,11 @@ class management(object):
         self.log   = self.log.loc[self.start:self.end:]
         print(r"Renewing the log ... ")
         if path.exists(self.log_path) is True:
-            self.log.loc[:, self.item] = data_renew(self.log.loc[:, self.item],pickleload(self.log_path))
+            old = pickleload(self.log_path)
+            print(self.log.loc[:, self.item])
+            print(old.loc[:,self.item].columns)
+            print(self.item)
+            self.log.loc[:, self.item] = data_renew(self.log.loc[:, self.item],old.loc[:,self.item])
         
     def clearner_lis(self, item=[]):
         if isinstance(item, list) is False:
@@ -134,14 +133,12 @@ class management(object):
 
 # In[]
 if __name__ == "__main__":
-    a=pickleload(path.join(cf.cloud_path, "log.pkl"))
+    # a=pickleload(path.join(cf.cloud_path, "log.pkl"))
     stocktable_renew = False
     m = management()
     m.mall
     log = m.log
-    parse_col = m.get_item(title=False)
-    crawldata = dataframe_zip(df=log, col_include=m.itemall, key_include=[
-        "wait"], time=False)
+    crawldata = dataframe_zip(df=log, col_include=m.itemall, key_include=["wait"], time=False)
     # "badconnection","closed","jsonerror"
     multilis = multilisforcrawl(crawldata)
     if stocktable_renew == True:
@@ -180,3 +177,6 @@ if __name__ == "__main__":
         print("Log saved .")
         sys.exit()
 
+# a = pickleload(r"/Users/stevenhsu/Documents/GitHub/trading/log.pkl")
+# a=a.iloc[:,:11]
+# picklesave(r"/Users/stevenhsu/Documents/GitHub/trading/log.pkl",a,cover=True)

@@ -24,7 +24,7 @@ crawlerdic={
                    "type": "ALL",
                    "_": "1613296592078"},
         "url":r"https://www.twse.com.tw/exchangeReport/MI_INDEX?",
-        "title":["market_"+_ for _ in ["價格指數(臺灣證券交易所)","價格指數(跨市場)","價格指數(臺灣指數公司)","報酬指數(臺灣證券交易所)","報酬指數(跨市場)","報酬指數(臺灣指數公司)","大盤統計資訊","漲跌證券數合計","每日收盤行情"]]
+        "title":["價格指數(臺灣證券交易所)","價格指數(跨市場)","價格指數(臺灣指數公司)","報酬指數(臺灣證券交易所)","報酬指數(跨市場)","報酬指數(臺灣指數公司)","大盤統計資訊","漲跌證券數合計","每日收盤行情"]
         },
     "信用交易統計":{
         "m":"market",
@@ -35,7 +35,7 @@ crawlerdic={
                    "date": "",
                    "selectType": "ALL"},
         "url":r"https://www.twse.com.tw/exchangeReport/MI_MARGN?",
-        "title":["market_"+_ for _ in ["融資融券彙總","信用交易統計"]]
+        "title":["融資融券彙總","信用交易統計"]
         },
     "市場成交資訊":{
         "m":"market",
@@ -46,7 +46,7 @@ crawlerdic={
                    "date": "",
                    "_":"1613392395864"},
         "url":r"https://www.twse.com.tw/exchangeReport/FMTQIK?",
-        "title":["market_"+_ for _ in ["市場成交資訊"]]
+        "title":["市場成交資訊"]
         },
     "三大法人買賣金額統計表":{
         "m":"market",
@@ -58,7 +58,7 @@ crawlerdic={
                    "type": "day",
                    "_":"1613389589646"},
         "url":r"https://www.twse.com.tw/fund/BFI82U?",
-        "title":["market_"+_ for _ in ["三大法人買賣金額統計表"]]
+        "title":["三大法人買賣金額統計表"]
         },
     "三大法人買賣超日報":{
         "m":"market",
@@ -69,7 +69,7 @@ crawlerdic={
                    "date": "",
                    "selectType": "ALL"},
         "url":r"https://www.twse.com.tw/fund/T86?",
-        "title":["market_"+_ for _ in ["三大法人買賣超日報"]]
+        "title":["三大法人買賣超日報"]
         },
     "個股日本益比、殖利率及股價淨值比":{
         "m":"stock",
@@ -81,7 +81,7 @@ crawlerdic={
                   "selectType" : "ALL",
                   "_": "1596117278906"},
         "url":r"https://www.twse.com.tw/exchangeReport/BWIBBU_d?",
-        "title":["stock_"+_ for _ in ["個股日本益比、殖利率及股價淨值比"]]
+        "title": ["個股日本益比、殖利率及股價淨值比"]
         },
     "信用額度總量管制餘額表":{
         "m":"stock",
@@ -92,7 +92,7 @@ crawlerdic={
                    "date": "",
                    "_": "1596721575815"},
         "url":r"https://www.twse.com.tw/exchangeReport/TWT93U?",
-        "title":["stock_"+_ for _ in ["信用額度總量管制餘額表"]]
+        "title":["信用額度總量管制餘額表"]
         },
     "當日沖銷交易標的及成交量值":{
         "m":"stock",
@@ -104,7 +104,7 @@ crawlerdic={
                    "selectType": "All",
                    "_": "1596117305431"},
         "url":r"https://www.twse.com.tw/exchangeReport/TWTB4U?",
-        "title":["stock_"+_ for _ in ["當日沖銷交易標的及成交量值"]]
+        "title":["當日沖銷交易標的及成交量值"]
         },
     # 這裡的,"當日沖銷交易統計"跟market有重複，因為都是大盤的沖銷交易===========
     "每月當日沖銷交易標的及統計":{
@@ -117,7 +117,7 @@ crawlerdic={
                    "stockNo": "",
                    "_": "1596117360962"},
         "url":"https://www.twse.com.tw/exchangeReport/TWTB4U2?",
-        "title":["market_"+_ for _ in ["每月當日沖銷交易標的及統計"]]
+        "title":["每月當日沖銷交易標的及統計"]
         },
     "外資及陸資投資持股統計":{
         "m":"stock",
@@ -129,7 +129,7 @@ crawlerdic={
                    "selectType": "ALLBUT0999",
                    "_": "1594606204191"},
         "url":"https://www.twse.com.tw/fund/MI_QFIIS?",
-        "title":["stock_"+_ for _ in ["外資及陸資投資持股統計","外資投資持股統計"]]
+        "title":["外資及陸資投資持股統計","外資投資持股統計"]
         },
     "發行量加權股價指數歷史資料":{
         "m":"market",
@@ -140,7 +140,7 @@ crawlerdic={
                    "date": "",
                    "_": "1597539490294"},
         "url":"https://www.twse.com.tw/indicesReport/MI_5MINS_HIST?",
-        "title":["market_"+_ for _ in ["發行量加權股價指數歷史資料"]]
+        "title": ["發行量加權股價指數歷史資料"]
         },
         }
 
