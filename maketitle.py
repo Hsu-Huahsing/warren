@@ -7,13 +7,8 @@ Created on Tue Jul 21 01:23:03 2020
 """
 import configuration as cf
 from crawl import management
-from steventricks.file import pickleload,picklesave
-# a=pickleload(r"D:/GitHub/trading/warehouse/每日收盤行情/每日收盤行情_2007-05-14.pkl")
-# a.memoryview
-from steventricks.date import istime,datefromsplit
-from steventricks.value import turntofloat, isnumber,dfappend
+from steventricks.mighty import pickleload,picklesave,istime,datefromsplit, turntofloat, isnumber,dfappend
 from traceback import format_exc
-import numpy as np
 import sys
 import pandas as pd
 from os import path
