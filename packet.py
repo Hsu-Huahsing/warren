@@ -200,7 +200,7 @@ def multilisforcrawl(itemlis=[],crawldic=crawlerdic):
         res.append(crawl)
     return res
 
-def crawlerdictodf(defaultstr="wait"):
+def crawlerdictodf(defaultstr="wait",typ="item"):
     def makeseries(col="",start="",end=now,freq="",pendix="",defaultstr=defaultstr):
         d = pd.date_range(start=start, end=end, freq=freq)
         d = d.append(pd.DatetimeIndex([now]))
@@ -208,11 +208,16 @@ def crawlerdictodf(defaultstr="wait"):
         s = pd.Series(np.repeat(defaultstr,d.size), index=d, name=pendix+col)
         return s
     reslis = []
-
-    for key in crawlerdic :
-        reslis.append(makeseries(col=key, start=crawlerdic[key]["date_min"], freq=crawlerdic[key]["freq"], pendix=""))
-            # for title in crawlerdic[key]["title"]:
-            #     reslis.append(makeseries(col=title,start=crawlerdic[key]["date_min"],freq=crawlerdic[key]["freq"],pendix=""))
+    if typ == "item":
+        for key in crawlerdic :
+            reslis.append(makeseries(col=key, start=crawlerdic[key]["date_min"], freq=crawlerdic[key]["freq"], pendix=""))
+    elif typ == "title":
+        for key in crawlerdic:
+            for title in crawlerdic[key]["title"]:
+                reslis.append(makeseries(col=title,start=crawlerdic[key]["date_min"],freq=crawlerdic[key]["freq"],pendix=""))
+    else:
+        print("wrong typ arg !")
+        return
 
     return pd.concat(reslis,axis=1)
 

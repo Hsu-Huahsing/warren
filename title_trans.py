@@ -6,21 +6,25 @@ Created on Tue Jul 21 01:23:03 2020
 @author: stevenhsu
 """
 import configuration as cf
-from crawl import management
-from steventricks.mighty import pickleload,picklesave,istime,datefromsplit, turntofloat, isnumber,dfappend
-from traceback import format_exc
-import sys
-import pandas as pd
-from os import path
 import gc
+import sys
+from os import path
+from traceback import format_exc
+import pandas as pd
+from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append
+from packet import crawlerdictodf
+class management(object):
+    def __init__(self,log="title_log.pkl"):
+        self.log_path=path.join(cf.cloud_path,log)
+        if path.exists(self.log_path) is True:
+            self.log = pickleload(self.log_path)
+        elif path.exists(self.log_path) is False:
+            self.log = crawlerdictodf(typ="title")
+        
+    
 gc.disable()
-from copy import deepcopy
-from datetime import datetime
-from multiprocessing import Pool,cpu_count
 debug=False
-m = management(loginit=False)
-
-log = m.log
+m=management()
 itemcol = m.get_item(title=False)
 itemzip = m.dataforparse(col_include=itemcol,time=True)
 

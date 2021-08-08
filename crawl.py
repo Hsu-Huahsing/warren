@@ -90,7 +90,7 @@ class management(object):
     log_path            = path.join(cf.cloud_path, "log.pkl")
     warehouse_path = path.join(cf.cloud_path, "warehouse")
     stocktable         = pickleload(path.join(cf.cloud_path, r"stocktable.pkl"))
-    log                     = crawlerdictodf()
+    log                     = crawlerdictodf(typ="item")
     mall                   = set([_["m"] for _ in crawlerdic.values()])
     item                   = [_ for _ in crawlerdic]
     # titleall       = [i for i in crawldic.values() for i in i["title"]]
