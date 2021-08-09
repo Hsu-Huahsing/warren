@@ -20,11 +20,11 @@ class management(object):
             self.log = pickleload(self.log_path)
         elif path.exists(self.log_path) is False:
             self.log = crawlerdictodf(typ="title")
-        
-    
+
 gc.disable()
 debug=False
 m=management()
+m.log
 itemcol = m.get_item(title=False)
 itemzip = m.dataforparse(col_include=itemcol,time=True)
 
