@@ -142,7 +142,11 @@ crawlerdic={
         "url":"https://www.twse.com.tw/indicesReport/MI_5MINS_HIST?",
         "title": ["發行量加權股價指數歷史資料"]
         },
-        }
+    }
+
+title_dic = {
+    t:_ for _ in crawlerdic for t in crawlerdic[_]["title"]
+}
 
 stocktable={"url":r"https://isin.twse.com.tw/isin/C_public.jsp?strMode={}",
             "charset":"cp950"
@@ -221,6 +225,11 @@ def crawlerdictodf(defaultstr="wait",typ="item"):
 
     return pd.concat(reslis,axis=1)
 
+def get_item(title):
+    return title_dic[title]
+
+def get_title(item):
+    return crawlerdic[item]["title"]
 
 if __name__ == '__main__' :
     l=[]

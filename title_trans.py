@@ -12,7 +12,9 @@ from os import path
 from traceback import format_exc
 import pandas as pd
 from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append
-from packet import crawlerdictodf
+from packet import crawlerdictodf, get_title, get_item
+from steventricks.db import dbmanager
+
 class management(object):
     def __init__(self,log="title_log.pkl"):
         self.log_path=path.join(cf.cloud_path,log)
@@ -25,6 +27,27 @@ gc.disable()
 debug=False
 m=management()
 m.log
+for title in m.log:
+    for d,value in m.log[title].items():
+        if value != "wait":continue
+        item = get_item(title)
+        if path.exists(path.join(cf.cloud_path,"warehouse",item,str(d.year),"{}_{}.pkl".format(item,d.date()))) is True:
+            data = pickleload(path.join(cf.cloud_path,"warehouse",item,str(d.year),"{}_{}.pkl".format(item,d.date())))
+        elif  path.exists(path.join(cf.cloud_path,"warehouse",item,"{}_{}.pkl".format(item,d))) is True:
+            data = pickleload(path.join(cf.cloud_path,"warehouse",item,"{}_{}.pkl".format(item,d)))
+        else:
+            continue
+        print(data)
+        
+        product = {
+            "col"  :[],
+            "value":[],
+            "title":[],
+            }
+        crawldate = data["crawldate"]
+        item = data["item"]
+        
+        print("\r{}".format(d),end="")
 itemcol = m.get_item(title=False)
 itemzip = m.dataforparse(col_include=itemcol,time=True)
 
