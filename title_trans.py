@@ -37,19 +37,20 @@ for title in m.log:
             data = pickleload(path.join(cf.cloud_path,"warehouse",item,"{}_{}.pkl".format(item,d)))
         else:
             continue
-        print(data)
+        # print(data)
         
         product = {
             "col"  :[],
             "value":[],
             "title":[],
             }
-        crawldate = data["crawldate"]
-        item = data["item"]
+        # crawldate = data["crawldate"]
+        # item1 = data["item"]
+        break
         
         print("\r{}".format(d),end="")
-itemcol = m.get_item(title=False)
-itemzip = m.dataforparse(col_include=itemcol,time=True)
+# itemcol = m.get_item(title=False)
+# itemzip = m.dataforparse(col_include=itemcol,time=True)
 
 key_dict = {
     "col"  :["field"],
