@@ -231,6 +231,10 @@ def get_item(title):
 def get_title(item):
     return crawlerdic[item]["title"]
 
+def search_title(item,title):
+    res=[_ for _ in crawlerdic[item]["title"] if _ in title]
+    return res
+
 if __name__ == '__main__' :
     l=[]
     # l = crawlerdictodf()

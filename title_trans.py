@@ -12,7 +12,7 @@ from os.path import join,exists
 from traceback import format_exc
 import pandas as pd
 from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append, path_walk, fileload
-from packet import crawlerdictodf, get_title, get_item
+from packet import crawlerdictodf, get_title, get_item, search_title
 from steventricks.db import dbmanager
 
 key_dict = {
@@ -32,7 +32,16 @@ def getkeys(data):
             i = [key for _ in i if _ in key.lower()]
             if i: product[k] += i
     return pd.DataFrame(product)
-        
+
+errordict = {
+    "titlename_error":{},
+    "newtitle"            :{},
+    "error"                  :{},
+    "logisnotwait"     :{},
+    "no_data"              :{},
+            }
+    
+    
 class management(object):
     def __init__(self,log="title_log.pkl"):
         self.log_path=join(cf.cloud_path,log)
@@ -49,17 +58,13 @@ data_dir=path_walk(join(cf.cloud_path,"warehouse"))
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
     filename,data=data[0],data[1]
+    # data_dir.loc[data_dir["path"]==file_path,"file"].values[0]
     item = filename.split("_")[0]
     crawldate=filename.split("_")[1]
     
     # print("\r{}".format(d),end="")
 
-    errordict = {
-        "list>1"      :{},
-        "newtitle"    :{},
-        "error"       :{},
-        "logisnotwait":{},
-                 }
+
     product = getkeys(data)
     print(item,crawldate+"===================================")
     
@@ -70,35 +75,25 @@ for file_path in data_dir["path"]:
 # 資料是空的就直接排除=========================================
         if not value : continue
 # 找出正確的title放到savename==================================
-        t= [_ for _ in m.titleall if _.split("_",1)[1] in data[title]]
-        if len(t) == 1 :
-            t=t[0]
-            savename = item+"_"+t+"{s}.pkl"
-            print(savename)
-        elif len(t)>1:
-            print(t)
-            if item not in errordict["list>1"]:errordict["list>1"][item] = [str(crawldate)+data[title]]
-            errordict["list>1"][item].append(str(crawldate)+data[title])
+        title= search_title(item=item,title=data[title])
+        if len(title) == 1 :
+            title=title[0]
+        elif len(title)>1:
+            print(title)
+            if item not in errordict["titlename_error"]:errordict["titlename_error"][item] = ["{}_{}".format(crawldate,",".join(title))]
+            errordict["titlename_error"][item].append("{}_{}".format(crawldate,",".join(title)))
             continue
-        elif not t:
+        elif not title:
             print("new title !!!    ",data[title])
-            if item not in errordict["newtitle"]:errordict["newtitle"][item] = [str(crawldate)+data[title]]
-            errordict["newtitle"][item].append(str(crawldate)+data[title])
-            # sys.exit()
+            if item not in errordict["newtitle"]:errordict["newtitle"][item] = ["{}_{}".format(crawldate,",".join(title))]
+            errordict["newtitle"][item].append("{}_{}".format(crawldate,",".join(title)))
             continue
         else :
-            if item not in errordict["error"]:errordict["error"][item] = [str(crawldate)+data[title]]
-            errordict["error"][item].append(str(crawldate)+data[title])
+            if item not in errordict["error"]:errordict["error"][item] = ["{}_{}".format(crawldate,",".join(title))]
+            errordict["error"][item].append("{}_{}".format(crawldate,",".join(title)))
             print("unexpected error")
             continue
-            # sys.exit()
 # 沒有在titlezip代表log裡面已經有資料了，不用再找第二次，所以跳出
-        if m.log.loc[crawldate,t] != "wait" :
-            if item not in errordict["logisnotwait"]:errordict["logisnotwait"][item] = [str(crawldate)+data[title]]
-            errordict["logisnotwait"][item].append(str(crawldate)+data[title])
-            print(crawldate,t)
-            print("log is not wait")
-            continue
         col = data[col]
         df = pd.DataFrame(value)
         
