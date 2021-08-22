@@ -15,7 +15,6 @@ import pandas as pd
 from multiprocessing import Pool
 from traceback import format_exc
 import sys
-now = datetime.now().date()
 
 def parser(crawlerdic={},timeout=20 ):
 # example : date == "2020-3-10"
@@ -130,7 +129,7 @@ class management(object):
 
 # In[]
 if __name__ == "__main__":
-    # a=pickleload(path.join(cf.cloud_path, "log.pkl"))
+    a=pickleload(path.join(cf.cloud_path, "stocktable.pkl"))
     stocktable_renew = False
     m = management()
     m.mall
@@ -139,8 +138,8 @@ if __name__ == "__main__":
     # "badconnection","closed","jsonerror"
     multilis = multilisforcrawl(crawldata)
     if stocktable_renew == True:
-        stocktable = stocktablecrawl(timeout=60)
-        picklesave(path.join(cf.cloud_path, "stocktable.pkl"), stocktable, repl=True)
+        stocktablecrawl(timeout=10)
+        # picklesave(path.join(cf.cloud_path, "stocktable.pkl"), stocktable, cover=True)
     # In[]
     try:
         for payload in multilis:

@@ -8,6 +8,7 @@ Created on Mon Jul 20 21:13:14 2020
 import configuration as cf
 import random
 from steventricks.mighty import make_url,data_renew
+from steventricks.db import dbmanager
 from copy import deepcopy
 from datetime import datetime
 import pandas as pd
@@ -173,19 +174,42 @@ def datesplit(d, sp="-"):
     d = d.split(sp)
     return d[0] + d[1].zfill(2) + d[2].zfill(2)
 
+
+# z=[[1,2,3],[5,5,5],[6],[1,1]]
+# zz=[_ for _ in z if len(set(_))==1 for _ in set(_)]
+# [(a,b) for a,b in zip(zz,zz[1:]+[None])]
+# zzz=pd.DataFrame([[1,2,3],[4,5,6],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"])
+# zzz.values
+# for _ in zzz.values:
+#     print(_)
+# zzz.index.get_loc("c")
+# zzz.index.slice_locs(start="b",end="f")
+# zzz["c":None]
+
 def stocktablecrawl(maxn=12,timeout=180):
     res=[]
     for _ in range(1,maxn,1):
         res.append(make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"]))
     print(res)
     res = [_ for _ in res for _ in _]
-    res1=pd.DataFrame()
-    for i in res:
-        i.set_index("國際證券辨識號碼(ISIN Code)",inplace=True)
-        i.loc[:,["代號","名稱"]]=i.iloc[:,0].str.split("　| ",expand=True).rename(columns={0:"代號",1:"名稱"})
-        i.drop_duplicates(inplace=True)
-        res1=data_renew(res1,i)
-    return res1
+    dm = dbmanager(root="/Users/stevenhsu/Documents/GitHub/trading",db=stocktable)
+    for df in res:
+        print(df)
+        tablename= [_ for _ in df.values if len(set(_))==1 for _ in set(_)]
+        name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[None])]
+        for nameindex in name_index:
+            if nameindex[1] is None:
+                df_sub = df[df.index.get_loc(nameindex[0])+1:]
+            else:
+                df_sub = df[df.index.get_loc(nameindex[0])+1:df.index.get_loc(nameindex[1])]
+            dm.table_change(newtable=nameindex[0])
+            dm.to_sql_ex(df=df_sub)
+            
+        # i.set_index("國際證券辨識號碼(ISIN Code)",inplace=True)
+        # i.loc[:,["代號","名稱"]]=i.iloc[:,0].str.split("　| ",expand=True).rename(columns={0:"代號",1:"名稱"})
+        # i.drop_duplicates(inplace=True)
+        # res1=data_renew(res1,i)
+    # return res1
 
 def multilisforcrawl(itemlis=[],crawldic=crawlerdic):
     # print(itemlis)
