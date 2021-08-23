@@ -178,11 +178,11 @@ def datesplit(d, sp="-"):
 # z=[[1,2,3],[5,5,5],[6],[1,1]]
 # zz=[_ for _ in z if len(set(_))==1 for _ in set(_)]
 # [(a,b) for a,b in zip(zz,zz[1:]+[None])]
-zzz=pd.DataFrame([[2,2,2],[4,4,4],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"])
-pd.DataFrame(zzz)
-zzz.reset_index(drop=True).reset_index()
-[list(set(_)) for _ in zzz.values if len(set(_))==2 ]
-[1,"444"].sort(key=lambda x:[_ for _ in x if isinstance(x,str) is False][0])
+# zzz=pd.DataFrame([[2,2,2],[4,4,4],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"])
+# pd.DataFrame(zzz)
+# zzz.reset_index(drop=True).reset_index()
+# [list(set(_)) for _ in zzz.values if len(set(_))==2 ]
+# [1,"444"].sort(key=lambda x:[_ for _ in x if isinstance(x,str) is False][0])
 # for _ in zzz.values:
 #     print(_)
 # zzz.index.get_loc("c")
@@ -210,15 +210,16 @@ def stocktablecrawl(maxn=12,timeout=180):
             dm.to_sql_ex(df=df)
             continue
         print(name_index)
-        return df
         for nameindex in name_index:
             start=nameindex[0]
+            startname,startint=[_ for _ in start if isinstance(_,str) is True][0],[_ for _ in start if isinstance(_,str) is False][0]
             end=nameindex[1]
+            endint=[_ for _ in start if isinstance(_,str) is False][0]
             if end[0] is None:
-                df_sub = df[start[0]+1:]
+                df_sub = df[startint+1:]
             else:
-                df_sub = df[start[0]+1:end[0]]
-            dm.table_change(newtable=start[1])
+                df_sub = df[startint+1:endint]
+            dm.table_change(newtable=startname)
             dm.to_sql_ex(df=df_sub)
             
         # i.set_index("國際證券辨識號碼(ISIN Code)",inplace=True)
