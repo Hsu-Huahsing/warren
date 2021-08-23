@@ -204,7 +204,7 @@ def stocktablecrawl(maxn=12,timeout=180):
         if len(tablename)>1:
             name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[[None]])]
         elif len(tablename)==1:
-            name_index = [tablename[0], [None]]
+            name_index = [(tablename[0], [None])]
         else:
             dm.table_change(newtable="無細項分類的商品")
             dm.to_sql_ex(df=df)
