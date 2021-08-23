@@ -188,7 +188,8 @@ zzz.reset_index(drop=True).reset_index()
 # zzz.index.get_loc("c")
 # zzz.index.slice_locs(start="b",end="f")
 # zzz["c":None]
-
+list({"44",33})
+list(set([333,"44"]))
 def stocktablecrawl(maxn=12,timeout=180):
     dm = dbmanager(root="/Users/stevenhsu/Documents/GitHub/trading",db="stocktable")
     for _ in range(1,maxn,1):
@@ -209,6 +210,7 @@ def stocktablecrawl(maxn=12,timeout=180):
             dm.to_sql_ex(df=df)
             continue
         print(name_index)
+        return df
         for nameindex in name_index:
             start=nameindex[0]
             end=nameindex[1]
