@@ -178,8 +178,10 @@ def datesplit(d, sp="-"):
 # z=[[1,2,3],[5,5,5],[6],[1,1]]
 # zz=[_ for _ in z if len(set(_))==1 for _ in set(_)]
 # [(a,b) for a,b in zip(zz,zz[1:]+[None])]
-# zzz=pd.DataFrame([[1,2,3],[4,5,6],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"])
-# zzz.values
+zzz=pd.DataFrame([[2,2,2],[4,4,4],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"]).reset_index()
+zzz.values
+[list(set(_)) for _ in zzz.values if len(set(_))==2 ]
+
 # for _ in zzz.values:
 #     print(_)
 # zzz.index.get_loc("c")
@@ -187,22 +189,30 @@ def datesplit(d, sp="-"):
 # zzz["c":None]
 
 def stocktablecrawl(maxn=12,timeout=180):
-    res=[]
+    dm = dbmanager(root="/Users/stevenhsu/Documents/GitHub/trading",db="stocktable")
     for _ in range(1,maxn,1):
-        res.append(make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"]))
-    print(res)
-    res = [_ for _ in res for _ in _]
-    dm = dbmanager(root="/Users/stevenhsu/Documents/GitHub/trading",db=stocktable)
-    for df in res:
-        print(df)
-        tablename= [_ for _ in df.values if len(set(_))==1 for _ in set(_)]
-        name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[None])]
+        df=make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"])
+        df = df[0].reset_index(drop=True).reset_idnex()
+        print(type(df))
+        tablename= [list(set(_)) for _ in df.values if len(set(_))==2]
+        print(tablename)
+        if len(tablename)>1:
+            name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[[None]])]
+        elif len(tablename)==1:
+            name_index = [tablename[0], [None]]
+        else:
+            dm.table_change(newtable="無細項分類的商品")
+            dm.to_sql_ex(df=df)
+            continue
+        print(name_index)
         for nameindex in name_index:
-            if nameindex[1] is None:
-                df_sub = df[df.index.get_loc(nameindex[0])+1:]
+            start=nameindex[0]
+            end=nameindex[1]
+            if end[0] is None:
+                df_sub = df[start[0]+1:]
             else:
-                df_sub = df[df.index.get_loc(nameindex[0])+1:df.index.get_loc(nameindex[1])]
-            dm.table_change(newtable=nameindex[0])
+                df_sub = df[start[0]+1:end[0]]
+            dm.table_change(newtable=start[1])
             dm.to_sql_ex(df=df_sub)
             
         # i.set_index("國際證券辨識號碼(ISIN Code)",inplace=True)
