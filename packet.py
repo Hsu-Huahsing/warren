@@ -178,10 +178,11 @@ def datesplit(d, sp="-"):
 # z=[[1,2,3],[5,5,5],[6],[1,1]]
 # zz=[_ for _ in z if len(set(_))==1 for _ in set(_)]
 # [(a,b) for a,b in zip(zz,zz[1:]+[None])]
-zzz=pd.DataFrame([[2,2,2],[4,4,4],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"]).reset_index()
-zzz.values
+zzz=pd.DataFrame([[2,2,2],[4,4,4],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"])
+pd.DataFrame(zzz)
+zzz.reset_index(drop=True).reset_index()
 [list(set(_)) for _ in zzz.values if len(set(_))==2 ]
-
+[1,"444"].sort(key=lambda x:[_ for _ in x if isinstance(x,str) is False][0])
 # for _ in zzz.values:
 #     print(_)
 # zzz.index.get_loc("c")
@@ -192,10 +193,13 @@ def stocktablecrawl(maxn=12,timeout=180):
     dm = dbmanager(root="/Users/stevenhsu/Documents/GitHub/trading",db="stocktable")
     for _ in range(1,maxn,1):
         df=make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"])
-        df = df[0].reset_index(drop=True).reset_idnex()
-        print(type(df))
+        print(type(df[0]))
+        df = pd.DataFrame(df[0]).reset_index(drop=True).reset_index()
+        print(df)
         tablename= [list(set(_)) for _ in df.values if len(set(_))==2]
         print(tablename)
+        df.drop(["index"],axis=1,inplace=True)
+        print(df)
         if len(tablename)>1:
             name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[[None]])]
         elif len(tablename)==1:
