@@ -5,14 +5,14 @@ Created on Fri May 22 23:22:32 2020
 
 @author: mac
 """
+
 import configuration as cf
 from os import path, walk
-from steventricks.mighty import picklesave, pickleload, path_walk,data_renew, make_url, dataframe_zip
+from steventricks.mighty import picklesave, pickleload,data_renew, make_url, dataframe_zip
 import requests as re
 from datetime import datetime
 from packet import crawlerdic, crawlerdictodf, multilisforcrawl, stocktablecrawl
 import pandas as pd
-from multiprocessing import Pool
 from traceback import format_exc
 import sys
 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     if stocktable_renew == True:
         stocktablecrawl(timeout=10)
         # picklesave(path.join(cf.cloud_path, "stocktable.pkl"), stocktable, cover=True)
-    # In[]
+# In[]
     try:
         for payload in multilis:
             print("crawling {}_{}".format(payload["crawldate"],payload["item"]))

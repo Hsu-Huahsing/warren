@@ -182,20 +182,33 @@ zzz=pd.DataFrame([[2,2,2],[4,4,4],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],inde
 # zzz[0:2
 
 def stocktablecrawl(maxn=12,timeout=180):
-    dm = dbmanager(root="/Users/stevenhsu/Documents/GitHub/trading",db="stocktable")
+    dm = dbmanager(root=cf.cloud_path,db="stocktable")
     for _ in range(1,maxn,1):
         df=make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"])
         df = pd.DataFrame(df[0]).reset_index(drop=True).reset_index()
         tablename= [list(set(_)) for _ in df.values if len(set(_))==2]
         df.drop(["index"],axis=1,inplace=True)
+        
+        if "指數代號及名稱" in df:
+            df.loc[:,["指數代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"指數代號",1:"名稱"})
+            pk="指數代號及名稱"
+        elif "有價證券代號及名稱" in df:
+            df.loc[:,["有價證券代號","名稱"]] = df.loc[:,"有價證券代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"有價證券代號",1:"名稱"})
+            pk="有價證券代號及名稱"
+        else:
+            print("no primary key")
+            print(_)
+            continue
+        df = df.rename(columns={"國際證券辨識號碼(ISIN Code)":"國際證券辨識號碼"})
+        
         if len(tablename)>1:
             name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[[None]])]
         elif len(tablename)==1:
             name_index = [(tablename[0], [None])]
         else:
-            dm.table_change(newtable="無細項分類的商品{}".format(str(_)))
-            dm.to_sql_ex(df=df)
+            dm.to_sql_ex(df=df,table="無細項分類的商品{}".format(str(_)),pk=pk)
             continue
+        
         for nameindex in name_index:
             start=nameindex[0]
             startname,startint=[_ for _ in start if isinstance(_,str) is True][0],[_ for _ in start if isinstance(_,str) is False][0]
@@ -205,23 +218,12 @@ def stocktablecrawl(maxn=12,timeout=180):
                 df_sub = df[startint+1:]
             else:
                 df_sub = df[startint+1:endint]
-                
-            if "指數代號及名稱" in df_sub:
-                df_sub.loc[:,["指數代號","名稱"]] = df_sub.loc[:,"指數代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"指數代號",1:"名稱"})
-            elif "有價證券代號及名稱" in df_sub:
-                df_sub.loc[:,["有價證券代號","名稱"]] = df_sub.loc[:,"有價證券代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"有價證券代號",1:"名稱"})
+            if startname == "上市認購(售)權證": startname="上市認購售權證"
+            if startname == "臺灣存託憑證(TDR)": startname="臺灣存託憑證TDR"
+            if startname == "受益證券-不動產投資信託": startname="受益證券不動產投資信託"
             
-            print(startint+1,endint)
-            dm.table_change(newtable=startname)
-            print(df_sub)
-            dm.to_sql_ex(df=df_sub)
+            dm.to_sql_ex(df=df_sub,table=startname,pk=pk)
             
-        # i.set_index("國際證券辨識號碼(ISIN Code)",inplace=True)
-        # i.loc[:,["代號","名稱"]]=i.iloc[:,0].str.split("　| ",expand=True).rename(columns={0:"代號",1:"名稱"})
-        # i.drop_duplicates(inplace=True)
-        # res1=data_renew(res1,i)
-    # return res1
-
 def multilisforcrawl(itemlis=[],crawldic=crawlerdic):
     # print(itemlis)
     res=[]
