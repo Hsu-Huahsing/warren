@@ -196,7 +196,7 @@ def stocktablecrawl(maxn=12,timeout=180):
         df = pd.DataFrame(df[0]).reset_index(drop=True).reset_index()
         tablename= [list(set(_)) for _ in df.values if len(set(_))==2]
         df.drop(["index"],axis=1,inplace=True)
-        df.loc[:,"date"]=cf.today
+        df.loc[:,"date"]=pd.to_datetime(cf.today)
         if "指數代號及名稱" in df:
             df.loc[:,["指數代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"指數代號",1:"名稱"})
             pk="指數代號及名稱"
