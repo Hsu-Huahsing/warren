@@ -197,25 +197,24 @@ def stocktablecrawl(maxn=12,timeout=180):
         tablename= [list(set(_)) for _ in df.values if len(set(_))==2]
         df.drop(["index","Unnamed: 6"],errors="ignore",axis=1,inplace=True)
         df.loc[:,"date"]=pd.to_datetime(cf.today)
+        
         if "指數代號及名稱" in df:
             df.loc[:,["指數代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"指數代號",1:"名稱"})
-            pk="指數代號及名稱"
         elif "有價證券代號及名稱" in df:
             df.loc[:,["有價證券代號","名稱"]] = df.loc[:,"有價證券代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"有價證券代號",1:"名稱"})
-            pk="有價證券代號及名稱"
-        else:
+        
+        df = df.rename(columns=rename_dic)
+        if "國際證券辨識號碼" not in df :
             print("no primary key")
             print(_)
             continue
-        
-        df = df.rename(columns=rename_dic)
         
         if len(tablename)>1:
             name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[[None]])]
         elif len(tablename)==1:
             name_index = [(tablename[0], [None])]
         else:
-            dm.to_sql_ex(df=df,table="無細項分類的商品{}".format(str(_)),pk=pk)
+            dm.to_sql_ex(df=df,table="無細項分類的商品{}".format(str(_)),pk="國際證券辨識號碼")
             continue
         
         for nameindex in name_index:
@@ -230,7 +229,7 @@ def stocktablecrawl(maxn=12,timeout=180):
                 
             if startname in rename_dic : startname = rename_dic[startname]
             
-            dm.to_sql_ex(df=df_sub,table=startname,pk=pk)
+            dm.to_sql_ex(df=df_sub,table=startname,pk="國際證券辨識號碼")
             
 def multilisforcrawl(itemlis=[],crawldic=crawlerdic):
     # print(itemlis)
