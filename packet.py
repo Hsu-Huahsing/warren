@@ -174,7 +174,15 @@ def datesplit(d, sp="-"):
     d = d.split(sp)
     return d[0] + d[1].zfill(2) + d[2].zfill(2)
 
-
+rename_dic={
+    "上市認購(售)權證":"上市認購售權證",
+    "臺灣存託憑證(TDR)":"臺灣存託憑證TDR",
+    "受益證券-不動產投資信託":"受益證券_不動產投資信託",
+    "國際證券辨識號碼(ISIN Code)":"國際證券辨識號碼",
+    "上櫃認購(售)權證":"上櫃認購售權證",
+    "受益證券-資產基礎證券":"受益證券_資產基礎證券",
+    "黃金期貨(USD)":"黃金期貨USD",
+    }
 # z=[[1,2,3],[5,5,5],[6],[1,1]]
 # zz=[_ for _ in z if len(set(_))==1 for _ in set(_)]
 # [(a,b) for a,b in zip(zz,zz[1:]+[None])]
@@ -188,7 +196,7 @@ def stocktablecrawl(maxn=12,timeout=180):
         df = pd.DataFrame(df[0]).reset_index(drop=True).reset_index()
         tablename= [list(set(_)) for _ in df.values if len(set(_))==2]
         df.drop(["index"],axis=1,inplace=True)
-        
+        df.loc[:,"date"]=cf.today
         if "指數代號及名稱" in df:
             df.loc[:,["指數代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"指數代號",1:"名稱"})
             pk="指數代號及名稱"
@@ -199,7 +207,8 @@ def stocktablecrawl(maxn=12,timeout=180):
             print("no primary key")
             print(_)
             continue
-        df = df.rename(columns={"國際證券辨識號碼(ISIN Code)":"國際證券辨識號碼"})
+        
+        df = df.rename(columns=rename_dic)
         
         if len(tablename)>1:
             name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[[None]])]
@@ -218,9 +227,8 @@ def stocktablecrawl(maxn=12,timeout=180):
                 df_sub = df[startint+1:]
             else:
                 df_sub = df[startint+1:endint]
-            if startname == "上市認購(售)權證": startname="上市認購售權證"
-            if startname == "臺灣存託憑證(TDR)": startname="臺灣存託憑證TDR"
-            if startname == "受益證券-不動產投資信託": startname="受益證券不動產投資信託"
+                
+            if startname in rename_dic : startname = rename_dic[startname]
             
             dm.to_sql_ex(df=df_sub,table=startname,pk=pk)
             
