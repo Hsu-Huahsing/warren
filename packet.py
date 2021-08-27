@@ -7,7 +7,7 @@ Created on Mon Jul 20 21:13:14 2020
 """
 import configuration as cf
 import random
-from steventricks.mighty import make_url,data_renew
+from steventricks.mighty import make_url
 from steventricks.db import dbmanager
 from copy import deepcopy
 from datetime import datetime
@@ -186,10 +186,9 @@ rename_dic={
 # z=[[1,2,3],[5,5,5],[6],[1,1]]
 # zz=[_ for _ in z if len(set(_))==1 for _ in set(_)]
 # [(a,b) for a,b in zip(zz,zz[1:]+[None])]
-zzz=pd.DataFrame([[2,2,2],[4,4,4],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"])
-# zzz[0:2
+# zzz=pd.DataFrame([[2,2,2],[4,4,4],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"])
 
-def stocktablecrawl(maxn=12,timeout=180):
+def stocktablecrawl(maxn=13,timeout=180):
     dm = dbmanager(root=cf.cloud_path,db="stocktable")
     for _ in range(1,maxn,1):
         df=make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"])
@@ -199,9 +198,9 @@ def stocktablecrawl(maxn=12,timeout=180):
         df.loc[:,"date"]=pd.to_datetime(cf.today)
         
         if "指數代號及名稱" in df:
-            df.loc[:,["指數代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"指數代號",1:"名稱"})
+            df.loc[:,["指數代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True,n=1).rename(columns={0:"指數代號",1:"名稱"})
         elif "有價證券代號及名稱" in df:
-            df.loc[:,["有價證券代號","名稱"]] = df.loc[:,"有價證券代號及名稱"].str.split(" |　",expand=True).rename(columns={0:"有價證券代號",1:"名稱"})
+            df.loc[:,["有價證券代號","名稱"]] = df.loc[:,"有價證券代號及名稱"].str.split(" |　",expand=True,n=1).rename(columns={0:"有價證券代號",1:"名稱"})
         
         df = df.rename(columns=rename_dic)
         if "國際證券辨識號碼" not in df :
