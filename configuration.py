@@ -36,8 +36,10 @@ import platform
 platform=platform.system()
 print(platform,"...Running platform")
 # to show what the operation system is running
-from datetime import date
+from datetime import date,datetime
 today = date.today()
+now=datetime.now()
+
 if sys.platform.startswith('win32'):
     cloud_path = path.abspath(workdir_path)
     # Do Windows stuff

@@ -129,8 +129,7 @@ class management(object):
 
 # In[]
 if __name__ == "__main__":
-    a=pickleload(path.join(cf.cloud_path, "stocktable.pkl"))
-    stocktable_renew = False
+    stocktable_renew = True
     m = management()
     m.mall
     log = m.log

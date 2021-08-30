@@ -11,10 +11,12 @@ import sys
 from os.path import join,exists
 from traceback import format_exc
 import pandas as pd
-from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append, path_walk, fileload
-from packet import crawlerdictodf, get_title, get_item, search_title
+from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append, path_walk, fileload, roctoad
+from packet import crawlerdictodf, get_title, get_item, search_title,rename_dic
 from steventricks.db import dbmanager
 
+# z=fileload("/Users/stevenhsu/Documents/GitHub/trading/warehouse/三大法人買賣超日報/三大法人買賣超日報_2013-01-07.pkl")[0]
+# zz=pd.DataFrame(z[1]["data"])
 key_dict = {
     "col": ["field"],
     "value": ["data", "list"],
@@ -40,8 +42,7 @@ errordict = {
     "logisnotwait"     :{},
     "no_data"              :{},
             }
-    
-    
+
 class management(object):
     def __init__(self,log="title_log.pkl"):
         self.log_path=join(cf.cloud_path,log)
@@ -54,17 +55,12 @@ gc.disable()
 debug=False
 m=management()
 m.log
-data_dir=path_walk(join(cf.cloud_path,"warehouse"))
+data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=[])
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
     filename,data=data[0],data[1]
-    # data_dir.loc[data_dir["path"]==file_path,"file"].values[0]
-    item = filename.split("_")[0]
-    crawldate=filename.split("_")[1]
+    item,crawldate = filename.split("_")
     
-    # print("\r{}".format(d),end="")
-
-
     product = getkeys(data)
     print(item,crawldate+"===================================")
     
@@ -109,41 +105,47 @@ for file_path in data_dir["path"]:
         # 所有類型都會碰到的清理方式===================================
         df.columns = [ str(_).replace("</br>","") for _ in col]
         df.replace(",","",regex=True,inplace=True)
-        df = turntofloat(df,col=["成交股數","成交筆數","成交金額","開盤價","最高價","最低價","收盤價","漲跌價差","最後揭示買價","最後揭示買量","最後揭示賣價","最後揭示賣量","本益比","買進","賣出","前日餘額","現金償還","今日餘額","限額","現券償還","資券互抵","成交金額(元)","成交股數(股)","現金(券)償還","當日賣出","當日還券","當日調整","當日餘額","次一營業日可限額","發行股數","外資及陸資尚可投資股數","全體外資及陸資持有股數","外資及陸資尚可投資比例","全體外資及陸資持股比率","外資及陸資共用法令投資上限比率","陸資法令投資上限比率","外資尚可投資股數","全體外資持有股數","外資尚可投資比率","全體外資持股比率","法令投資上限比率","開盤指數","最低指數","最高指數","收盤指數","漲跌點數","漲跌百分比(%)","發行量加權股價指數","買進金額","賣出金額","買賣差額","外資買進股數","外資賣出股數","外資買賣超股數","投信買進股數","投信賣出股數","投信買賣超股數","自營商買賣超股數","自營商買進股數(自行買賣)","自營商賣出股數(自行買賣)","自營商買賣超股數(自行買賣)","自營商買進股數(避險)","自營商賣出股數(避險)","自營商買賣超股數(避險)","三大法人買賣超股數","殖利率(%)","股價淨值比","當日沖銷交易總成交股數","當日沖銷交易總成交股數占市場比重%","當日沖銷交易總買進成交金額","當日沖銷交易總買進成交金額占市場比重%","當日沖銷交易總賣出成交金額","當日沖銷交易總賣出成交金額占市場比重%","當日沖銷交易成交股數","當日沖銷交易買進成交金額","當日沖銷交易賣出成交金額","外陸資買進股數(不含外資自營商)","外陸資賣出股數(不含外資自營商)","外陸資買賣超股數(不含外資自營商)","外資自營商買進股數","外資自營商賣出股數","外資自營商買賣超股數"])
+        df = df.rename(columns=rename_dic)
+        df = turntofloat(df,col=["成交股數","成交筆數","成交金額","開盤價","最高價","最低價","收盤價","漲跌價差","最後揭示買價","最後揭示買量","最後揭示賣價","最後揭示賣量","本益比","買進","賣出","前日餘額","現金償還","今日餘額","限額","現券償還","資券互抵","成交金額_元","成交股數_股","現金券償還","當日賣出","當日還券","當日調整","當日餘額","次一營業日可限額","發行股數","外資及陸資尚可投資股數","全體外資及陸資持有股數","外資及陸資尚可投資比例","全體外資及陸資持股比率","外資及陸資共用法令投資上限比率","陸資法令投資上限比率","外資尚可投資股數","全體外資持有股數","外資尚可投資比率","全體外資持股比率","法令投資上限比率","開盤指數","最低指數","最高指數","收盤指數","漲跌點數","漲跌百分比%","發行量加權股價指數","買進金額","賣出金額","買賣差額","外資買進股數","外資賣出股數","外資買賣超股數","投信買進股數","投信賣出股數","投信買賣超股數","自營商買賣超股數","自營商買進股數_自行買賣","自營商賣出股數_自行買賣","自營商買賣超股數_自行買賣","自營商買進股數_避險","自營商賣出股數_避險","自營商買賣超股數_避險","三大法人買賣超股數","殖利率%","股價淨值比","當日沖銷交易總成交股數","當日沖銷交易總成交股數占市場比重%","當日沖銷交易總買進成交金額","當日沖銷交易總買進成交金額占市場比重%","當日沖銷交易總賣出成交金額","當日沖銷交易總賣出成交金額占市場比重%","當日沖銷交易成交股數","當日沖銷交易買進成交金額","當日沖銷交易賣出成交金額","外陸資買進股數_不含外資自營商","外陸資賣出股數_不含外資自營商","外陸資買賣超股數_不含外資自營商","外資自營商買進股數","外資自營商賣出股數","外資自營商買賣超股數"])
         # 變更index================================================
-        if "證券代號" in df and "證券名稱" in df :
+        if "有價證券代號" in df and "名稱" in df :
             df.index = df["證券代號"].str.strip()+"_"+df["證券名稱"].str.strip()
-            df.drop(["證券代號","證券名稱"],axis=1,inplace=True)
-        elif "股票代號" in df and "股票名稱" in df :
-            df.index = df["股票代號"].str.strip()+"_"+df["股票名稱"].str.strip()
-            df.drop(["股票代號","股票名稱"],axis=1,inplace=True)
+            pk="有價證券代號"
         elif "成交統計" in df :
             df.index = df["成交統計"].str.strip()
             df.drop("成交統計",axis=1,inplace=True)
+            pk="成交統計"
         elif "項目" in df:
             df.index = df["項目"].str.strip()
             df.drop("項目",axis=1,inplace=True)
+            pk="項目"
         elif "單位名稱" in df :
             df.index = df["單位名稱"].str.strip()
             df.drop("單位名稱",axis=1,inplace=True)
+            pk="單位名稱"
         elif "指數" in df :
             df.index = df["指數"].str.strip()
             df.drop("指數",axis=1,inplace=True)
+            pk="指數"
         elif "日期" in df :
-            df.loc[:,"日期"] = df["日期"].map(lambda x : datefromsplit(x))
+            df.loc[:,"日期"] = df["日期"].map(lambda x : roctoad(x,method="realtime"))
             df.index = pd.to_datetime(df["日期"])
             df.drop("日期",axis=1,inplace=True)
+            pk="日期"
+            table=title
         elif "報酬指數" in df :
             df.index = df["報酬指數"].str.strip()
             df.drop("報酬指數",axis=1,inplace=True)
+            pk="報酬指數"
         elif "類型" in df :
             df.index = df["類型"].str.strip()
             df.drop("類型",axis=1,inplace=True)
+            pk="類型"
             
         df.index.name="index"
         
         # 開始添加、變更欄位=======================================
-        if "融資融券" in t :
+        if "融資融券" in title :
             df.columns = ",".join(df.columns).replace("買進","融券買進").replace("融券買進","融資買進",1).split(",")
             df.columns = ",".join(df.columns).replace("賣出","融券賣出").replace("融券賣出","融資賣出",1).split(",")
             df.columns = ",".join(df.columns).replace("前日餘額","前日融券餘額").replace("前日融券餘額","前日融資餘額",1).split(",")
@@ -151,19 +153,19 @@ for file_path in data_dir["path"]:
             df.columns = ",".join(df.columns).replace("限額","融券限額").replace("融券限額","融資限額",1).split(",")
         if "買進金額" in df and "賣出金額" in df :
             df.loc[:,"交易總額"] = df["買進金額"] + df["賣出金額"]
-        if "外陸資買進股數(不含外資自營商)" in df and "外陸資賣出股數(不含外資自營商)" in df :
-            df.loc[:,"外陸資交易總股數(不含外資自營商)"] = df["外陸資買進股數(不含外資自營商)"] + df["外陸資賣出股數(不含外資自營商)"]
+        if "外陸資買進股數_不含外資自營商" in df and "外陸資賣出股數_不含外資自營商" in df :
+            df.loc[:,"外陸資交易總股數_不含外資自營商)"] = df["外陸資買進股數_不含外資自營商"] + df["外陸資賣出股數_不含外資自營商"]
         if "外資買進股數" in df and "外資賣出股數" in df :
             df.loc[:,"外資交易總股數"] = df["外資買進股數"] + df["外資賣出股數"]
-        if "外陸資買賣超股數(不含外資自營商)" in df and "外資自營商買賣超股數" in df :
-            df.loc[:,"外陸資買賣超股數"] = df["外陸資買賣超股數(不含外資自營商)"] + df["外資自營商買賣超股數"]
+        if "外陸資買賣超股數_不含外資自營商" in df and "外資自營商買賣超股數" in df :
+            df.loc[:,"外陸資買賣超股數"] = df["外陸資買賣超股數_不含外資自營商"] + df["外資自營商買賣超股數"]
         if "投信買進股數" in df and "投信賣出股數" in df :
             df.loc[:,"投信交易總股數"] = df["投信買進股數"] + df["投信賣出股數"]
-        if "自營商買進股數(自行買賣)" in df and "自營商賣出股數(自行買賣)" in df :
-            df.loc[:,"自營商交易總股數(自行買賣)"] = df["自營商買進股數(自行買賣)"] + df["自營商賣出股數(自行買賣)"]
-        if "自營商買進股數(避險)" in df and "自營商賣出股數(避險)" in df :
-            df.loc[:,"自營商交易總股數(避險)"] = df["自營商買進股數(避險)"] + df["自營商賣出股數(避險)"]
-        if "信用額度總量管制" in t:
+        if "自營商買進股數_自行買賣" in df and "自營商賣出股數_自行買賣" in df :
+            df.loc[:,"自營商交易總股數_自行買賣"] = df["自營商買進股數_自行買賣"] + df["自營商賣出股數_自行買賣"]
+        if "自營商買進股數_避險" in df and "自營商賣出股數_避險" in df :
+            df.loc[:,"自營商交易總股數_避險"] = df["自營商買進股數_避險"] + df["自營商賣出股數_避險"]
+        if "信用額度總量管制" in title:
             df = df.iloc[:,6:]
         if "收盤價" in df and "本益比" in df :
             df.loc[:,"eps"] = df["收盤價"]/df["本益比"]
@@ -190,13 +192,13 @@ for file_path in data_dir["path"]:
         if "今日餘額" in df and "前日餘額" in df :
             df.loc[:,"信用交易淨額"] = df["今日餘額"] - df["前日餘額"]
         if "買進" in df and "賣出" in df and "現金(券)償還" in df :
-            df.loc[:,"信用交易總額"] = df["買進"] + df["賣出"] + df["現金(券)償還"]
+            df.loc[:,"信用交易總額"] = df["買進"] + df["賣出"] + df["現金券償還"]
         if "財報年/季" in df :
-            df.loc[:,"財報年/季"] = df["財報年/季"].map(lambda x : datefromsplit(x))
+            df.loc[:,"財報年/季"] = df["財報年/季"].map(lambda x : roctoad(x,method="realtime"))
         if "最近一次上市公司申報外資持股異動日期" in df :
-            df.loc[:,"最近一次上市公司申報外資持股異動日期"] = df["最近一次上市公司申報外資持股異動日期"].map(lambda x : datefromsplit(x))
+            df.loc[:,"最近一次上市公司申報外資持股異動日期"] = df["最近一次上市公司申報外資持股異動日期"].map(lambda x : roctoad(x,method="realtime"))
         if "最近一次上市公司申報外資及陸資持股異動日期" in df :
-            df.loc[:,"最近一次上市公司申報外資及陸資持股異動日期"] = df["最近一次上市公司申報外資及陸資持股異動日期"].map(lambda x : datefromsplit(x))
+            df.loc[:,"最近一次上市公司申報外資及陸資持股異動日期"] = df["最近一次上市公司申報外資及陸資持股異動日期"].map(lambda x : roctoad(x,method="realtime"))
         if "整體市場" in df and "股票" in df :
             df.loc[:,["整體市場","整體市場漲停"]] = df["整體市場"].str.split("(",expand=True).rename(columns={0:"整體市場",1:"整體市場漲停"})
             df.loc[:,["股票","股票漲停"]] = df["股票"].str.split("(",expand=True).rename(columns={0:"股票",1:"股票漲停"})

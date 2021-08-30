@@ -175,27 +175,53 @@ def datesplit(d, sp="-"):
     return d[0] + d[1].zfill(2) + d[2].zfill(2)
 
 rename_dic={
-    "上市認購(售)權證"           :"上市認購售權證",
-    "臺灣存託憑證(TDR)"          :"臺灣存託憑證TDR",
-    "受益證券-不動產投資信託"     :"受益證券_不動產投資信託",
-    "國際證券辨識號碼(ISIN Code)":"國際證券辨識號碼",
-    "上櫃認購(售)權證"           :"上櫃認購售權證",
-    "受益證券-資產基礎證券"       :"受益證券_資產基礎證券",
-    "黃金期貨(USD)"              :"黃金期貨USD",
+    "上市認購(售)權證"                       :"上市認購售權證",
+    "臺灣存託憑證(TDR)"                    :"臺灣存託憑證TDR",
+    "受益證券-不動產投資信託"             :"受益證券_不動產投資信託",
+    "國際證券辨識號碼(ISIN Code)"     :"國際證券辨識號碼ISINCode",
+    "上櫃認購(售)權證"                       :"上櫃認購售權證",
+    "受益證券-資產基礎證券"                :"受益證券_資產基礎證券",
+    "黃金期貨(USD)"                          :"黃金期貨USD",
+    "成交金額(元)"                             :"成交金額_元",
+    "成交股數(股)"                             :"成交股數_股",
+    "漲跌百分比(%)"                           :"漲跌百分比%",
+    "自營商買進股數(自行買賣)"           :"自營商買進股數_自行買賣",
+    "自營商賣出股數(自行買賣)"           :"自營商賣出股數_自行買賣",
+    "自營商買賣超股數(自行買賣)"        :"自營商買賣超股數_自行買賣",
+    "自營商買進股數(避險)"                 :"自營商買進股數_避險",
+    "自營商賣出股數(避險)"                 :"自營商賣出股數_避險",
+    "自營商買賣超股數(避險)"               :"自營商買賣超股數_避險",
+    "殖利率(%)"                                 :"殖利率%",
+    "外陸資買進股數(不含外資自營商)"   :"外陸資買進股數_不含外資自營商",
+    "外陸資賣出股數(不含外資自營商)"   :"外陸資賣出股數_不含外資自營商",
+    "外陸資買賣超股數(不含外資自營商)":"外陸資買賣超股數_不含外資自營商",
+    "證券代號":"有價證券代號",
+    "證券名稱":"名稱",
+    "股票代號":"有價證券代號",
+    "股票名稱":"名稱",
+    
     }
 # z=[[1,2,3],[5,5,5],[6],[1,1]]
 # zz=[_ for _ in z if len(set(_))==1 for _ in set(_)]
 # [(a,b) for a,b in zip(zz,zz[1:]+[None])]
 # zzz=pd.DataFrame([[2,2,2],[4,4,4],[7,8,9],[10,11,12],[13,14,15],[16,17,18]],index=["a","b","c","d","e","f"])
+# zzz.loc[zzz.index=="a",:].values
+# zzz.values
+# zzz["d"]=cf.now
+# zzz.dtypes
 
-def stocktablecrawl(maxn=13,timeout=180):
+def stocktablecrawl(maxn=13,timeout=180,pk="國際證券辨識號碼ISINCode"):
     dm = dbmanager(root=cf.cloud_path,db="stocktable")
     for _ in range(1,maxn,1):
         df=make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"])
-        df = pd.DataFrame(df[0]).reset_index(drop=True).reset_index()
+        df = pd.DataFrame(df[0])
+        if df.empty is True :
+            print("stocktable No:{} ___empty crawled result".format(_))
+            continue
+        df=df.reset_index(drop=True).reset_index()
         tablename= [list(set(_)) for _ in df.values if len(set(_))==2]
         df.drop(["index","Unnamed: 6"],errors="ignore",axis=1,inplace=True)
-        df.loc[:,"date"]=pd.to_datetime(cf.today)
+        df.loc[:,"date"]=pd.to_datetime(cf.now)
         
         if "指數代號及名稱" in df:
             df.loc[:,["指數代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True,n=1).rename(columns={0:"指數代號",1:"名稱"})
@@ -203,7 +229,7 @@ def stocktablecrawl(maxn=13,timeout=180):
             df.loc[:,["有價證券代號","名稱"]] = df.loc[:,"有價證券代號及名稱"].str.split(" |　",expand=True,n=1).rename(columns={0:"有價證券代號",1:"名稱"})
         
         df = df.rename(columns=rename_dic)
-        if "國際證券辨識號碼" not in df :
+        if pk  not in df :
             print("no primary key")
             print(_)
             continue
@@ -213,7 +239,7 @@ def stocktablecrawl(maxn=13,timeout=180):
         elif len(tablename)==1:
             name_index = [(tablename[0], [None])]
         else:
-            dm.to_sql_ex(df=df,table="無細項分類的商品{}".format(str(_)),pk="國際證券辨識號碼")
+            dm.to_sql_ex(df=df,table="無細項分類的商品{}".format(str(_)),pk=pk)
             continue
         
         for nameindex in name_index:
@@ -228,7 +254,7 @@ def stocktablecrawl(maxn=13,timeout=180):
                 
             if startname in rename_dic : startname = rename_dic[startname]
             
-            dm.to_sql_ex(df=df_sub,table=startname,pk="國際證券辨識號碼")
+            dm.to_sql_ex(df=df_sub,table=startname,pk=pk)
             
 def multilisforcrawl(itemlis=[],crawldic=crawlerdic):
     # print(itemlis)
