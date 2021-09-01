@@ -255,7 +255,7 @@ def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
             if startname in rename_dic : startname = rename_dic[startname]
             df_sub.loc[:,"product"]=startname
             dm.to_sql_ex(df=df_sub,table=startname,pk=pk)
-            
+
 def multilisforcrawl(itemlis=[],crawldic=crawlerdic):
     # print(itemlis)
     res=[]

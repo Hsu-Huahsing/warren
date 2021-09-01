@@ -11,6 +11,7 @@ from os import path, walk
 from steventricks.mighty import picklesave, pickleload,data_renew, make_url, dataframe_zip
 import requests as re
 from datetime import datetime
+from steventricks.db import dbmanager
 from packet import crawlerdic, crawlerdictodf, multilisforcrawl, stocktablecrawl
 import pandas as pd
 from traceback import format_exc
@@ -131,6 +132,7 @@ class management(object):
 if __name__ == "__main__":
     stocktable_renew = True
     m = management()
+    db = dbmanager(root=cf.cloud_path,db="stocktable")
     m.mall
     log = m.log
     crawldata = dataframe_zip(df=log, col_include=m.item, key_include=["wait"], time=False)
@@ -138,6 +140,7 @@ if __name__ == "__main__":
     multilis = multilisforcrawl(crawldata)
     if stocktable_renew == True:
         stocktablecrawl(timeout=10)
+        db.viewofalltable(viewname="viewofall",columns=["ISINCode","date","產業別","有價證券代號","名稱"])
         # picklesave(path.join(cf.cloud_path, "stocktable.pkl"), stocktable, cover=True)
 # In[]
     try:
