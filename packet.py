@@ -176,12 +176,12 @@ def datesplit(d, sp="-"):
 
 rename_dic={
     "上市認購(售)權證"                       :"上市認購售權證",
-    "臺灣存託憑證(TDR)"                    :"臺灣存託憑證TDR",
+    "臺灣存託憑證(TDR)"                    :"臺灣存託憑證",
     "受益證券-不動產投資信託"             :"受益證券_不動產投資信託",
-    "國際證券辨識號碼(ISIN Code)"     :"國際證券辨識號碼ISINCode",
+    "國際證券辨識號碼(ISIN Code)"     :"ISINCode",
     "上櫃認購(售)權證"                       :"上櫃認購售權證",
     "受益證券-資產基礎證券"                :"受益證券_資產基礎證券",
-    "黃金期貨(USD)"                          :"黃金期貨USD",
+    "黃金期貨(USD)"                          :"黃金期貨",
     "成交金額(元)"                             :"成交金額_元",
     "成交股數(股)"                             :"成交股數_股",
     "漲跌百分比(%)"                           :"漲跌百分比%",
@@ -210,7 +210,7 @@ rename_dic={
 # zzz["d"]=cf.now
 # zzz.dtypes
 
-def stocktablecrawl(maxn=13,timeout=180,pk="國際證券辨識號碼ISINCode"):
+def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
     dm = dbmanager(root=cf.cloud_path,db="stocktable")
     for _ in range(1,maxn,1):
         df=make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"])
@@ -253,7 +253,7 @@ def stocktablecrawl(maxn=13,timeout=180,pk="國際證券辨識號碼ISINCode"):
                 df_sub = df[startint+1:endint]
                 
             if startname in rename_dic : startname = rename_dic[startname]
-            
+            df_sub.loc[:,"product"]=startname
             dm.to_sql_ex(df=df_sub,table=startname,pk=pk)
             
 def multilisforcrawl(itemlis=[],crawldic=crawlerdic):

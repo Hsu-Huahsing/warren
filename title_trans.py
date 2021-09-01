@@ -13,8 +13,10 @@ from traceback import format_exc
 import pandas as pd
 from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append, path_walk, fileload, roctoad
 from packet import crawlerdictodf, get_title, get_item, search_title,rename_dic
-from steventricks.db import dbmanager
+from steventricks.db import dbmanager 
 
+m=dbmanager(root=cf.cloud_path,db="stocktable")
+z=m.conn.cursor().execute("select 國際證券辨識號碼ISINCode from ETF,ETN")
 # z=fileload("/Users/stevenhsu/Documents/GitHub/trading/warehouse/三大法人買賣超日報/三大法人買賣超日報_2013-01-07.pkl")[0]
 # zz=pd.DataFrame(z[1]["data"])
 key_dict = {
@@ -25,7 +27,7 @@ key_dict = {
 
 def getkeys(data):
     product = {
-        "col": [],
+        "col"  : [],
         "value": [],
         "title": [],
     }
@@ -37,25 +39,33 @@ def getkeys(data):
 
 errordict = {
     "titlename_error":{},
-    "newtitle"            :{},
-    "error"                  :{},
-    "logisnotwait"     :{},
-    "no_data"              :{},
+    "newtitle"       :{},
+    "error"          :{},
+    "logisnotwait"   :{},
+    "no_data"        :{},
             }
 
-class management(object):
+class logmanagement(object):
     def __init__(self,log="title_log.pkl"):
         self.log_path=join(cf.cloud_path,log)
         if exists(self.log_path) is True:
-            self.log = pickleload(self.log_path)
+            self.log = fileload(self.log_path)[0][1]
         elif exists(self.log_path) is False:
-            self.log = []
-
+            self.log = {}
+    def log_exists(self,key="",value=""):
+        if key in self.log : 
+            if value in self.log[key]:
+                return True
+        return False
+    def log_append(self,key="",value=""):
+        if key not in self.log: self.log[key]=[]
+        if key in self.log    : self.log[key].append(value)
+        
 gc.disable()
 debug=False
-m=management()
+m=logmanagement()
 m.log
-data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=[])
+data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["三大法人買賣超日"],file_include=[".pkl"])
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
     filename,data=data[0],data[1]
@@ -90,6 +100,7 @@ for file_path in data_dir["path"]:
             print("unexpected error")
             continue
 # 沒有在titlezip代表log裡面已經有資料了，不用再找第二次，所以跳出
+        if m.log_exists(key=title,value=filename) is True:continue
         col = data[col]
         df = pd.DataFrame(value)
         
@@ -106,10 +117,11 @@ for file_path in data_dir["path"]:
         df.columns = [ str(_).replace("</br>","") for _ in col]
         df.replace(",","",regex=True,inplace=True)
         df = df.rename(columns=rename_dic)
-        df = turntofloat(df,col=["成交股數","成交筆數","成交金額","開盤價","最高價","最低價","收盤價","漲跌價差","最後揭示買價","最後揭示買量","最後揭示賣價","最後揭示賣量","本益比","買進","賣出","前日餘額","現金償還","今日餘額","限額","現券償還","資券互抵","成交金額_元","成交股數_股","現金券償還","當日賣出","當日還券","當日調整","當日餘額","次一營業日可限額","發行股數","外資及陸資尚可投資股數","全體外資及陸資持有股數","外資及陸資尚可投資比例","全體外資及陸資持股比率","外資及陸資共用法令投資上限比率","陸資法令投資上限比率","外資尚可投資股數","全體外資持有股數","外資尚可投資比率","全體外資持股比率","法令投資上限比率","開盤指數","最低指數","最高指數","收盤指數","漲跌點數","漲跌百分比%","發行量加權股價指數","買進金額","賣出金額","買賣差額","外資買進股數","外資賣出股數","外資買賣超股數","投信買進股數","投信賣出股數","投信買賣超股數","自營商買賣超股數","自營商買進股數_自行買賣","自營商賣出股數_自行買賣","自營商買賣超股數_自行買賣","自營商買進股數_避險","自營商賣出股數_避險","自營商買賣超股數_避險","三大法人買賣超股數","殖利率%","股價淨值比","當日沖銷交易總成交股數","當日沖銷交易總成交股數占市場比重%","當日沖銷交易總買進成交金額","當日沖銷交易總買進成交金額占市場比重%","當日沖銷交易總賣出成交金額","當日沖銷交易總賣出成交金額占市場比重%","當日沖銷交易成交股數","當日沖銷交易買進成交金額","當日沖銷交易賣出成交金額","外陸資買進股數_不含外資自營商","外陸資賣出股數_不含外資自營商","外陸資買賣超股數_不含外資自營商","外資自營商買進股數","外資自營商賣出股數","外資自營商買賣超股數"])
+        df = turntofloat(df,col=["成交股數","成交筆數","成交金額","開盤價","最高價","最低價","收盤價","漲跌價差","最後揭示買價","最後揭示買量","最後揭示賣價","最後揭示賣量","本益比","買進","賣出","前日餘額","現金償還","今日餘額","限額","現券償還","資券互抵","成交金額_元","成交股數_股","現金券償還","當日賣出","當日還券","當日調整","當日餘額","次一營業日可限額","發行股數","外資及陸資尚可投資股數","全體外資及陸資持有股數","外資及陸資尚可投資比例","全體外資及陸資持股比率","外資及陸資共用法令投資上限比率","陸資法令投資上限比率","外資尚可投資股數","全體外資持有股數","外資尚可投資比率","全體外資持股比率","法令投資上限比率","開盤指數","最低指數","最高指數","收盤指數","漲跌點數","漲跌百分比%","發行量加權股價指數","買進金額","賣出金額","買賣差額","外資買進股數","外資賣出股數","外資買賣超股數","投信買進股數","投信賣出股數","投信買賣超股數","自營商買賣超股數","自營商買進股數_自行買賣","自營商賣出股數_自行買賣","自營商買賣超股數_自行買賣","自營商買進股數_避險","自營商賣出股數_避險","自營商買賣超股數_避險","三大法人買賣超股數","殖利率%","股價淨值比","當日沖銷交易總成交股數","當日沖銷交易總成交股數占市場比重%","當日沖銷交易總買進成交金額","當日沖銷交易總買進成交金額占市場比重%","當日沖銷交易總賣出成交金額","當日沖銷交易總賣出成交金額占市場比重%","當日沖銷交易成交股數","當日沖銷交易買進成交金額","當日沖銷交易賣出成交金額","外陸資買進股數_不含外資自營商","外陸資賣出股數_不含外資自營商","外陸資買賣超股數_不含外資自營商","外資自營商買進股數","外資自營商賣出股數","外資自營商買賣超股數","自營商買進股數","自營商賣出股數"])
         # 變更index================================================
+        table=""
         if "有價證券代號" in df and "名稱" in df :
-            df.index = df["證券代號"].str.strip()+"_"+df["證券名稱"].str.strip()
+            df.index = df["有價證券代號"].str.strip()+"_"+df["名稱"].str.strip()
             pk="有價證券代號"
         elif "成交統計" in df :
             df.index = df["成交統計"].str.strip()
@@ -210,29 +222,17 @@ for file_path in data_dir["path"]:
         try:
 # 開始分為stock 和 market兩種方式來儲存==========================
             if isinstance(df.index,pd.DatetimeIndex) == False :
-                for p in df.index.unique():
+                for p in df.index:
                     print("\r{}".format(p),end="")
                     newdf = df.loc[df.index.isin([p]),:]
-                    if isinstance(m.findstock(io=p),pd.Series) == True:
-                        p=m.findstock(io=p)
-                        if p.size!=1:sys.exit()
-                        p=p.values[0]
-                    savepath = path.join(management.warehouse_path,"product",p,savename.format(s="_"+p))
-                    newdf.index = [crawldate]
-                    if path.exists(savepath) == True :
-                        old = pickleload(savepath)
-                        newdf = dfappend(newdf,old)
-                    picklesave(savepath,newdf,repl=True)
+                    
+                    
             elif isinstance(df.index,pd.DatetimeIndex) == True :
-                savepath = path.join(m.warehouse_path,"product",savename.format(s=""))
-                if path.exists(savepath) == True :
-                    old = pickleload(savepath)
-                    newdf = newdf.append(newdf,old)
-                    newdf.drop_duplicates(inplace=True)
-                picklesave(savepath,newdf,repl=True)
+                pass
+                
 # 存檔完成進行log改寫=========================================
-            m.log.loc[crawldate,t] = cf.today
-            picklesave(m.olderlog_path,m.log,repl=True)
+            m.log_append(key=title,value=filename)
+            picklesave(m.log_path,m.log,cover=True)
             print("saving sucessed !!")
             gc.collect()
             # gc.get_threshold()
@@ -240,8 +240,7 @@ for file_path in data_dir["path"]:
             # gc.enable()
         except KeyboardInterrupt:
             print("KeyboardInterrupt ... content saving canceled !")
-            break
-            # sys.exit()
+            sys.exit()
         except Exception as e :
             print("===============")
             print(format_exc())
@@ -249,3 +248,4 @@ for file_path in data_dir["path"]:
             print(e)
             break
             # sys.exit()
+    break

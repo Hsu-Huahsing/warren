@@ -19,11 +19,11 @@ import sys
 def parser(crawlerdic={},timeout=20 ):
 # example : date == "2020-3-10"
     crawldate = crawlerdic["crawldate"]
-    item         = crawlerdic["item"]
-    url           = crawlerdic["url"]
-    header      = crawlerdic["header"]
-    payload    = crawlerdic["payload"]
-    m               = crawlerdic["m"]
+    item      = crawlerdic["item"]
+    url       = crawlerdic["url"]
+    header    = crawlerdic["header"]
+    payload   = crawlerdic["payload"]
+    m         = crawlerdic["m"]
     
 # debug for date =====================================================
     try:
