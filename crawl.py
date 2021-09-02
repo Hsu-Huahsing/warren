@@ -11,7 +11,6 @@ from os import path, walk
 from steventricks.mighty import picklesave, pickleload,data_renew, make_url, dataframe_zip
 import requests as re
 from datetime import datetime
-from steventricks.db import dbmanager
 from packet import crawlerdic, crawlerdictodf, multilisforcrawl, stocktablecrawl
 import pandas as pd
 from traceback import format_exc
@@ -132,7 +131,6 @@ class management(object):
 if __name__ == "__main__":
     stocktable_renew = True
     m = management()
-    db = dbmanager(root=cf.cloud_path,db="stocktable")
     m.mall
     log = m.log
     crawldata = dataframe_zip(df=log, col_include=m.item, key_include=["wait"], time=False)

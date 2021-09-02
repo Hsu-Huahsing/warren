@@ -65,6 +65,9 @@ gc.disable()
 debug=False
 m=logmanagement()
 m.log
+db=dbmanager(root=cf.cloud_path,db="stocktable")
+stocktable=db.alltableget()
+
 data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["三大法人買賣超日"],file_include=[".pkl"])
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
@@ -103,8 +106,7 @@ for file_path in data_dir["path"]:
         if m.log_exists(key=title,value=filename) is True:continue
         col = data[col]
         df = pd.DataFrame(value)
-        
-        # 欄位排序有錯的直接把非文字的數值排除掉========================
+# 欄位排序有錯的直接把非文字的數值排除掉========================
         if df.columns.size != len(col) :
             df = df.T
             for c in df.columns :
