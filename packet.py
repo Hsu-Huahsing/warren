@@ -195,10 +195,12 @@ rename_dic={
     "外陸資買進股數(不含外資自營商)"   :"外陸資買進股數_不含外資自營商",
     "外陸資賣出股數(不含外資自營商)"   :"外陸資賣出股數_不含外資自營商",
     "外陸資買賣超股數(不含外資自營商)":"外陸資買賣超股數_不含外資自營商",
-    "證券代號":"有價證券代號",
-    "證券名稱":"名稱",
-    "股票代號":"有價證券代號",
-    "股票名稱":"名稱",
+    # "證券代號":"代號",
+    # "證券名稱":"名稱",
+    # "股票代號":"代號",
+    # "指數代號":"代號",
+    # "股票名稱":"名稱",
+    "有價證券名稱":"名稱",
     
     }
 # z=[[1,2,3],[5,5,5],[6],[1,1]]
@@ -222,18 +224,15 @@ def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
         tablename= [list(set(_)) for _ in df.values if len(set(_))==2]
         df.drop(["index","Unnamed: 6"],errors="ignore",axis=1,inplace=True)
         df.loc[:,"date"]=pd.to_datetime(cf.now)
-        
         if "指數代號及名稱" in df:
-            df.loc[:,["指數代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True,n=1).rename(columns={0:"指數代號",1:"名稱"})
+            df.loc[:,["代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True,n=1).rename(columns={0:"代號",1:"名稱"})
         elif "有價證券代號及名稱" in df:
-            df.loc[:,["有價證券代號","名稱"]] = df.loc[:,"有價證券代號及名稱"].str.split(" |　",expand=True,n=1).rename(columns={0:"有價證券代號",1:"名稱"})
-        
+            df.loc[:,["代號","名稱"]] = df.loc[:,"有價證券代號及名稱"].str.split(" |　",expand=True,n=1).rename(columns={0:"代號",1:"名稱"})
         df = df.rename(columns=rename_dic)
         if pk  not in df :
             print("no primary key")
             print(_)
             continue
-        
         if len(tablename)>1:
             name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[[None]])]
         elif len(tablename)==1:
@@ -244,8 +243,8 @@ def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
         
         for nameindex in name_index:
             start=nameindex[0]
-            startname,startint=[_ for _ in start if isinstance(_,str) is True][0],[_ for _ in start if isinstance(_,str) is False][0]
             end=nameindex[1]
+            startname,startint=[_ for _ in start if isinstance(_,str) is True][0],[_ for _ in start if isinstance(_,str) is False][0]
             endint=[_ for _ in end if isinstance(_,str) is False][0]
             if end[0] is None:
                 df_sub = df[startint+1:]

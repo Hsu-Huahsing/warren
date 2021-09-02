@@ -140,7 +140,6 @@ if __name__ == "__main__":
     multilis = multilisforcrawl(crawldata)
     if stocktable_renew == True:
         stocktablecrawl(timeout=10)
-        db.viewofalltable(viewname="viewofall",columns=["ISINCode","date","產業別","有價證券代號","名稱"])
         # picklesave(path.join(cf.cloud_path, "stocktable.pkl"), stocktable, cover=True)
 # In[]
     try:
