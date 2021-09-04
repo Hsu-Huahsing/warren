@@ -195,11 +195,11 @@ rename_dic={
     "外陸資買進股數(不含外資自營商)"   :"外陸資買進股數_不含外資自營商",
     "外陸資賣出股數(不含外資自營商)"   :"外陸資賣出股數_不含外資自營商",
     "外陸資買賣超股數(不含外資自營商)":"外陸資買賣超股數_不含外資自營商",
-    # "證券代號":"代號",
-    # "證券名稱":"名稱",
-    # "股票代號":"代號",
-    # "指數代號":"代號",
-    # "股票名稱":"名稱",
+    "證券代號":"代號",
+    "證券名稱":"名稱",
+    "股票代號":"代號",
+    "指數代號":"代號",
+    "股票名稱":"名稱",
     "有價證券名稱":"名稱",
     
     }
@@ -238,7 +238,9 @@ def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
         elif len(tablename)==1:
             name_index = [(tablename[0], [None])]
         else:
-            dm.to_sql_ex(df=df,table="無細項分類的商品{}".format(str(_)),pk=pk)
+            table="無細項分類的商品{}".format(str(_))
+            df.loc[:, "product"] = table
+            dm.to_sql_ex(df=df,table=table,pk=pk)
             continue
         
         for nameindex in name_index:
