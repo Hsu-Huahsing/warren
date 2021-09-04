@@ -120,7 +120,7 @@ for file_path in data_dir["path"]:
         df = turntofloat(df,col=["成交股數","成交筆數","成交金額","開盤價","最高價","最低價","收盤價","漲跌價差","最後揭示買價","最後揭示買量","最後揭示賣價","最後揭示賣量","本益比","買進","賣出","前日餘額","現金償還","今日餘額","限額","現券償還","資券互抵","成交金額_元","成交股數_股","現金券償還","當日賣出","當日還券","當日調整","當日餘額","次一營業日可限額","發行股數","外資及陸資尚可投資股數","全體外資及陸資持有股數","外資及陸資尚可投資比例","全體外資及陸資持股比率","外資及陸資共用法令投資上限比率","陸資法令投資上限比率","外資尚可投資股數","全體外資持有股數","外資尚可投資比率","全體外資持股比率","法令投資上限比率","開盤指數","最低指數","最高指數","收盤指數","漲跌點數","漲跌百分比%","發行量加權股價指數","買進金額","賣出金額","買賣差額","外資買進股數","外資賣出股數","外資買賣超股數","投信買進股數","投信賣出股數","投信買賣超股數","自營商買賣超股數","自營商買進股數_自行買賣","自營商賣出股數_自行買賣","自營商買賣超股數_自行買賣","自營商買進股數_避險","自營商賣出股數_避險","自營商買賣超股數_避險","三大法人買賣超股數","殖利率%","股價淨值比","當日沖銷交易總成交股數","當日沖銷交易總成交股數占市場比重%","當日沖銷交易總買進成交金額","當日沖銷交易總買進成交金額占市場比重%","當日沖銷交易總賣出成交金額","當日沖銷交易總賣出成交金額占市場比重%","當日沖銷交易成交股數","當日沖銷交易買進成交金額","當日沖銷交易賣出成交金額","外陸資買進股數_不含外資自營商","外陸資賣出股數_不含外資自營商","外陸資買賣超股數_不含外資自營商","外資自營商買進股數","外資自營商賣出股數","外資自營商買賣超股數","自營商買進股數","自營商賣出股數"])
         # 變更index================================================
         if "代號" in df and "名稱" in df :
-            df.index = df["代號"].str.strip()+df["名稱"].str.strip()
+            df.index = df["代號"].str.strip()+"_"+df["名稱"].str.strip()
             pk="代號"
         elif "成交統計" in df :
             df.index = df["成交統計"].str.strip()
@@ -214,7 +214,7 @@ for file_path in data_dir["path"]:
             df.loc[:,["股票","股票漲停"]] = df["股票"].str.split("(",expand=True).rename(columns={0:"股票",1:"股票漲停"})
             df.replace("\)","",regex=True,inplace=True)
             df = turntofloat(df,col=["整體市場","整體市場漲停","股票","股票漲停"])
-        
+            
         df=df.join(stocktable.loc[:,[_ for _ in stocktable if _ not in df]])
         df.dropna(axis=1,how="all",inplace=True)
         
@@ -222,6 +222,7 @@ for file_path in data_dir["path"]:
 # 開始分為stock 和 market兩種方式來儲存==========================
             if isinstance(df.index,pd.DatetimeIndex) == False :
                 for product in df["product"].unique():
+                    if pd.isnull(product) is True : product = "無細項分類商品"
                     db.database_change(root=join(cf.cloud_path,"warehouse"),newdatabase=product)
                     for stock in df.loc[df["product"]==product,:].index:
                         print("\r{}".format(stock),end="")
