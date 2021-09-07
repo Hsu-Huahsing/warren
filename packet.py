@@ -105,7 +105,7 @@ crawlerdic={
                    "selectType": "All",
                    "_": "1596117305431"},
         "url":r"https://www.twse.com.tw/exchangeReport/TWTB4U?",
-        "title":["當日沖銷交易標的及成交量值"]
+        "title":["當日沖銷交易標的及成交量值","當日沖銷交易統計資訊"]
         },
     # 這裡的,"當日沖銷交易統計"跟market有重複，因為都是大盤的沖銷交易===========
     "每月當日沖銷交易標的及統計":{

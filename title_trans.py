@@ -66,7 +66,7 @@ stocktable=db.alltableget(filename="stocktable")
 stocktable.reset_index(inplace=True,drop=True)
 stocktable.index = stocktable["代號"]+"_"+stocktable["名稱"]
 
-data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["個股日本益比"],file_include=[".pkl"])
+data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=[],file_include=[".pkl"])
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
     filename,data=data[0],data[1]
@@ -75,12 +75,12 @@ for file_path in data_dir["path"]:
     print(item,crawldate+"===================================")
     
     for col,value,title in product.values[:] :
-        
         print(col,value,title)
         value = data[value]
 # 資料是空的就直接排除=========================================
         if not value : continue
 # 找出正確的title放到savename==================================
+        print(data["title"])
         title= search_title(item=item,title=data[title])
         if len(title) == 1 :
             title=title[0]
@@ -152,35 +152,8 @@ for file_path in data_dir["path"]:
         if "代號" in df and "名稱" in df :
             df.index = df["代號"].str.strip()+"_"+df["名稱"].str.strip()
             pk="date"
-        elif "成交統計" in df :
-            df.index = df["成交統計"].str.strip()
-            df.drop("成交統計",axis=1,inplace=True)
-            pk="成交統計"
-        # elif "項目" in df:
-        #     df.index = df["項目"].str.strip()
-        #     df.drop("項目",axis=1,inplace=True)
-        #     pk="項目"
-        # elif "單位名稱" in df :
-            # df.loc[:,"單位名稱"]= df["單位名稱"].str.strip()
-        #     uniquekey=["單位名稱"]
-        #     pk="date"
-        elif "指數" in df :
-            df.index = df["指數"].str.strip()
-            df.drop("指數",axis=1,inplace=True)
-            pk="指數"
         elif "日期" in df :
             df.loc[:,"日期"] = df["日期"].map(lambda x : roctoad(x,method="realtime"))
-            df.index = pd.to_datetime(df["日期"])
-            df.drop("日期",axis=1,inplace=True)
-            pk="日期"
-        elif "報酬指數" in df :
-            df.index = df["報酬指數"].str.strip()
-            df.drop("報酬指數",axis=1,inplace=True)
-            pk="報酬指數"
-        elif "類型" in df :
-            df.index = df["類型"].str.strip()
-            df.drop("類型",axis=1,inplace=True)
-            pk="類型"
             
         df.index.name="index"
         
@@ -240,21 +213,25 @@ for file_path in data_dir["path"]:
             
         df=df.join(stocktable.loc[:,[_ for _ in stocktable if _ not in df]])
         df.dropna(axis=1,how="all",inplace=True)
-        
         try:
 # 開始分為stock 和 market兩種方式來儲存==========================
             print(df)
             print(title)
             print(item)
-            if isinstance(df.index, pd.DatetimeIndex) == True:
-                db.database_change(root=join(cf.cloud_path, "warehouse"), newdatabase="market")
-                db.to_sql_ex(df=df, table=title, pk=pk)
-                
-            elif title in ["三大法人買賣金額統計表","信用交易統計"]:
+            print(df.columns)
+            if title in ["三大法人買賣金額統計表","信用交易統計","價格指數(臺灣證券交易所)","價格指數(跨市場)","價格指數(臺灣指數公司)","報酬指數(臺灣證券交易所)","報酬指數(跨市場)","報酬指數(臺灣指數公司)","大盤統計資訊","漲跌證券數合計"]:
                 db.database_change(root=join(cf.cloud_path, "warehouse"), newdatabase="market")
                 db.to_sql_ex(df=df, table=title)
+                
+            elif title in ["當日沖銷交易統計資訊"]:
+                db.database_change(root=join(cf.cloud_path, "warehouse"), newdatabase="market")
+                db.to_sql_ex(df=df, table=title, pk="date")
+                
+            elif "日期" in df:
+                db.database_change(root=join(cf.cloud_path, "warehouse"), newdatabase="market")
+                db.to_sql_ex(df=df, table=title, pk="日期")
 
-            elif isinstance(df.index,pd.DatetimeIndex) == False :
+            else :
                 for product in df["product"].unique():
                     if pd.isnull(product) is True : product = "無細項分類商品"
                     db.database_change(root=join(cf.cloud_path,"warehouse"),newdatabase=product)
