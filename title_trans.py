@@ -11,7 +11,7 @@ import sys
 from os.path import join,exists
 from traceback import format_exc
 import pandas as pd
-from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append, path_walk, fileload, roctoad
+from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append, path_walk, fileload, roctoad, isnumber
 from packet import crawlerdictodf, get_title, get_item, search_title,rename_dic
 from steventricks.db import dbmanager 
 
@@ -66,7 +66,7 @@ stocktable=db.alltableget(filename="stocktable")
 stocktable.reset_index(inplace=True,drop=True)
 stocktable.index = stocktable["代號"]+"_"+stocktable["名稱"]
 
-data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["三大法人買賣超日"],file_include=[".pkl"])
+data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["個股日本益比"],file_include=[".pkl"])
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
     filename,data=data[0],data[1]
@@ -114,26 +114,56 @@ for file_path in data_dir["path"]:
         # 開始進行欄位清理============================================================
         # 所有類型都會碰到的清理方式===================================
         df.columns = [ str(_).replace("</br>","") for _ in col]
+        df.drop("前日餘額",axis=1,inplace=True,errors="ignore")
         df.replace(",","",regex=True,inplace=True)
         df = df.rename(columns=rename_dic)
         df.loc[:,"date"]=pd.to_datetime(crawldate)
-        df = turntofloat(df,col=["成交股數","成交筆數","成交金額","開盤價","最高價","最低價","收盤價","漲跌價差","最後揭示買價","最後揭示買量","最後揭示賣價","最後揭示賣量","本益比","買進","賣出","前日餘額","現金償還","今日餘額","限額","現券償還","資券互抵","成交金額_元","成交股數_股","現金券償還","當日賣出","當日還券","當日調整","當日餘額","次一營業日可限額","發行股數","外資及陸資尚可投資股數","全體外資及陸資持有股數","外資及陸資尚可投資比例","全體外資及陸資持股比率","外資及陸資共用法令投資上限比率","陸資法令投資上限比率","外資尚可投資股數","全體外資持有股數","外資尚可投資比率","全體外資持股比率","法令投資上限比率","開盤指數","最低指數","最高指數","收盤指數","漲跌點數","漲跌百分比%","發行量加權股價指數","買進金額","賣出金額","買賣差額","外資買進股數","外資賣出股數","外資買賣超股數","投信買進股數","投信賣出股數","投信買賣超股數","自營商買賣超股數","自營商買進股數_自行買賣","自營商賣出股數_自行買賣","自營商買賣超股數_自行買賣","自營商買進股數_避險","自營商賣出股數_避險","自營商買賣超股數_避險","三大法人買賣超股數","殖利率%","股價淨值比","當日沖銷交易總成交股數","當日沖銷交易總成交股數占市場比重%","當日沖銷交易總買進成交金額","當日沖銷交易總買進成交金額占市場比重%","當日沖銷交易總賣出成交金額","當日沖銷交易總賣出成交金額占市場比重%","當日沖銷交易成交股數","當日沖銷交易買進成交金額","當日沖銷交易賣出成交金額","外陸資買進股數_不含外資自營商","外陸資賣出股數_不含外資自營商","外陸資買賣超股數_不含外資自營商","外資自營商買進股數","外資自營商賣出股數","外資自營商買賣超股數","自營商買進股數","自營商賣出股數"])
+        
+        if "融資融券" in title :
+            df.columns = ",".join(df.columns).replace("買進","融券買進").replace("融券買進","融資買進",1).split(",")
+            df.columns = ",".join(df.columns).replace("賣出","融券賣出").replace("融券賣出","融資賣出",1).split(",")
+            df.columns = ",".join(df.columns).replace("今日餘額","今日融券餘額").replace("今日融券餘額","今日融資餘額",1).split(",")
+            df.columns = ",".join(df.columns).replace("限額","融券限額").replace("融券限額","融資限額",1).split(",")
+        elif "信用額度總量管制餘額表" in title:
+            if "當日賣出" in df:
+                df.columns = ",".join(df.columns).replace("賣出","融券賣出").replace("買進","融券買進").split(",")
+            else:
+                df.columns = ",".join(df.columns).replace("賣出", "當日賣出").replace("買進", "融券買進").replace("當日賣出","融券賣出",1).split(",")
+            if "當日餘額" not in df:
+                df.columns = ",".join(df.columns).replace("今日餘額", "當日餘額").replace("當日餘額", "今日餘額",1).split(",")
+            
+        unit=1
+        if title in ["信用交易統計"]:
+            unit=1000
+        df = turntofloat(df,col=["成交股數","成交筆數","成交金額","開盤價","最高價","最低價","收盤價","漲跌價差","最後揭示買價","最後揭示買量","最後揭示賣價","最後揭示賣量","本益比","今日餘額","買進","賣出","融資買進","融資賣出","融券買進","融券賣出","現金償還","今日融資餘額",
+                                 "今日融券餘額",
+                                 "融資限額",
+                                 "融券限額",
+                                 "現券償還","資券互抵",
+                                 "成交金額_元","成交股數_股",
+                                 "現金券償還","當日賣出",
+                                 "當日還券","當日調整","當日餘額","次一營業日可限額","發行股數","外資及陸資尚可投資股數","全體外資及陸資持有股數","外資及陸資尚可投資比例","全體外資及陸資持股比率","外資及陸資共用法令投資上限比率","陸資法令投資上限比率","外資尚可投資股數","全體外資持有股數","外資尚可投資比率","全體外資持股比率","法令投資上限比率",
+                                 "開盤指數","最低指數","最高指數","收盤指數","漲跌點數","漲跌百分比%","發行量加權股價指數","買進金額","賣出金額","買賣差額","外資買進股數","外資賣出股數","外資買賣超股數","投信買進股數","投信賣出股數","投信買賣超股數","自營商買賣超股數","自營商買進股數_自行買賣","自營商賣出股數_自行買賣",
+                                 "自營商買賣超股數_自行買賣","自營商買進股數_避險","自營商賣出股數_避險","自營商買賣超股數_避險","三大法人買賣超股數","殖利率%","股價淨值比","當日沖銷交易總成交股數","當日沖銷交易總成交股數占市場比重%","當日沖銷交易總買進成交金額","當日沖銷交易總買進成交金額占市場比重%","當日沖銷交易總賣出成交金額",
+                                 "當日沖銷交易總賣出成交金額占市場比重%","當日沖銷交易成交股數","當日沖銷交易買進成交金額","當日沖銷交易賣出成交金額","外陸資買進股數_不含外資自營商","外陸資賣出股數_不含外資自營商","外陸資買賣超股數_不含外資自營商","外資自營商買進股數","外資自營商賣出股數","外資自營商買賣超股數","自營商買進股數","自營商賣出股數"],
+                         unit=unit)
         # 變更index================================================
+        print(df)
         if "代號" in df and "名稱" in df :
             df.index = df["代號"].str.strip()+"_"+df["名稱"].str.strip()
-            pk="代號"
+            pk="date"
         elif "成交統計" in df :
             df.index = df["成交統計"].str.strip()
             df.drop("成交統計",axis=1,inplace=True)
             pk="成交統計"
-        elif "項目" in df:
-            df.index = df["項目"].str.strip()
-            df.drop("項目",axis=1,inplace=True)
-            pk="項目"
-        elif "單位名稱" in df :
-            df.index = df["單位名稱"].str.strip()
-            df.drop("單位名稱",axis=1,inplace=True)
-            pk="單位名稱"
+        # elif "項目" in df:
+        #     df.index = df["項目"].str.strip()
+        #     df.drop("項目",axis=1,inplace=True)
+        #     pk="項目"
+        # elif "單位名稱" in df :
+            # df.loc[:,"單位名稱"]= df["單位名稱"].str.strip()
+        #     uniquekey=["單位名稱"]
+        #     pk="date"
         elif "指數" in df :
             df.index = df["指數"].str.strip()
             df.drop("指數",axis=1,inplace=True)
@@ -155,12 +185,6 @@ for file_path in data_dir["path"]:
         df.index.name="index"
         
         # 開始添加、變更欄位=======================================
-        if "融資融券" in title :
-            df.columns = ",".join(df.columns).replace("買進","融券買進").replace("融券買進","融資買進",1).split(",")
-            df.columns = ",".join(df.columns).replace("賣出","融券賣出").replace("融券賣出","融資賣出",1).split(",")
-            df.columns = ",".join(df.columns).replace("前日餘額","前日融券餘額").replace("前日融券餘額","前日融資餘額",1).split(",")
-            df.columns = ",".join(df.columns).replace("今日餘額","今日融券餘額").replace("今日融券餘額","今日融資餘額",1).split(",")
-            df.columns = ",".join(df.columns).replace("限額","融券限額").replace("融券限額","融資限額",1).split(",")
         if "買進金額" in df and "賣出金額" in df :
             df.loc[:,"交易總額"] = df["買進金額"] + df["賣出金額"]
         if "外陸資買進股數_不含外資自營商" in df and "外陸資賣出股數_不含外資自營商" in df :
@@ -185,6 +209,7 @@ for file_path in data_dir["path"]:
             df.loc[:,"成交股數/成交筆數"] = df["成交股數"]/df["成交筆數"]
         if "融資買進" in df and "融資賣出" in df and "現金償還" in df :
             df.loc[:,"融資交易總張數"] = df["融資買進"] + df["融資賣出"] + df["現金償還"]
+            
         if "融券買進" in df and "融券賣出" in df and "現券償還" in df :
             df.loc[:,"融券交易總張數"] = df["融券買進"] + df["融券賣出"] + df["現券償還"]
         if "當日賣出" in df and "當日還券" in df and "當日調整" in df :
@@ -199,8 +224,6 @@ for file_path in data_dir["path"]:
             df.loc[:,"信用交易總張數"] = df["融券交易張數"] + df["融資交易張數"]
         if "信用交易總張數" in df :
             df.loc[:,"信用交易淨額"] =  df["融資交易張數"] - df["融券交易張數"]
-        if "今日餘額" in df and "前日餘額" in df :
-            df.loc[:,"信用交易淨額"] = df["今日餘額"] - df["前日餘額"]
         if "買進" in df and "賣出" in df and "現金(券)償還" in df :
             df.loc[:,"信用交易總額"] = df["買進"] + df["賣出"] + df["現金券償還"]
         if "財報年/季" in df :
@@ -220,7 +243,18 @@ for file_path in data_dir["path"]:
         
         try:
 # 開始分為stock 和 market兩種方式來儲存==========================
-            if isinstance(df.index,pd.DatetimeIndex) == False :
+            print(df)
+            print(title)
+            print(item)
+            if isinstance(df.index, pd.DatetimeIndex) == True:
+                db.database_change(root=join(cf.cloud_path, "warehouse"), newdatabase="market")
+                db.to_sql_ex(df=df, table=title, pk=pk)
+                
+            elif title in ["三大法人買賣金額統計表","信用交易統計"]:
+                db.database_change(root=join(cf.cloud_path, "warehouse"), newdatabase="market")
+                db.to_sql_ex(df=df, table=title)
+
+            elif isinstance(df.index,pd.DatetimeIndex) == False :
                 for product in df["product"].unique():
                     if pd.isnull(product) is True : product = "無細項分類商品"
                     db.database_change(root=join(cf.cloud_path,"warehouse"),newdatabase=product)
@@ -229,9 +263,7 @@ for file_path in data_dir["path"]:
                         newdf = df.loc[df.index.isin([stock]),:]
                         db.to_sql_ex(df=newdf,table=stock,pk=pk)
                     
-            elif isinstance(df.index,pd.DatetimeIndex) == True :
-                db.database_change(root=join(cf.cloud_path,"warehouse"),newdatabase="market")
-                db.to_sql_ex(df=df,table=title,pk=pk)
+
 # 存檔完成進行log改寫=========================================
             m.log_append(key=title,value=filename)
             picklesave(m.log_path,m.log,cover=True)
@@ -248,6 +280,6 @@ for file_path in data_dir["path"]:
             print(format_exc())
             print("Unknowned error")
             print(e)
-            break
-            # sys.exit()
-    break
+            # break
+            sys.exit()
+    # break
