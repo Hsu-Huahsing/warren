@@ -342,6 +342,7 @@ def addcolumns(df):
         df.loc[:, ["股票", "股票漲停"]] = df["股票"].str.split("(", expand=True).rename(columns={0: "股票", 1: "股票漲停"})
         df.replace("\)", "", regex=True, inplace=True)
         df = turntofloat(df, col=["整體市場", "整體市場漲停", "股票", "股票漲停"])
+    return df
         
 if __name__ == '__main__' :
     l=[]

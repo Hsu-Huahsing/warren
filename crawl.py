@@ -129,11 +129,11 @@ class management(object):
 
 # In[]
 if __name__ == "__main__":
-    stocktable_renew = True
+    stocktable_renew = False
     m = management()
     m.mall
     log = m.log
-    crawldata = dataframe_zip(df=log, col_include=m.item, key_include=["wait"], time=False)
+    crawldata = dataframe_zip(df=log, col_include=m.item, key_include=["closed"], time=False)
     # "badconnection","closed","jsonerror"
     multilis = multilisforcrawl(crawldata)
     if stocktable_renew == True:
