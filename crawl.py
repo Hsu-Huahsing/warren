@@ -137,7 +137,7 @@ if __name__ == "__main__":
     # "badconnection","closed","jsonerror"
     multilis = multilisforcrawl(crawldata)
     if stocktable_renew == True:
-        stocktablecrawl(timeout=10)
+        stocktablecrawl(timeout=15)
 # In[]
     try:
         for payload in multilis:
