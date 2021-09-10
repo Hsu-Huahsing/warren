@@ -19,7 +19,15 @@ key_dict = {
     "col": ["field"],
     "value": ["data", "list"],
     "title": ["title"]
-}
+        }
+
+errordict = {
+    "titlename_error":{},
+    "newtitle"       :{},
+    "error"          :{},
+    "logisnotwait"   :{},
+    "no_data"        :{},
+            }
 
 def getkeys(data):
     product = {
@@ -32,14 +40,6 @@ def getkeys(data):
             i = [key for _ in i if _ in key.lower()]
             if i: product[k] += i
     return pd.DataFrame(product)
-
-errordict = {
-    "titlename_error":{},
-    "newtitle"       :{},
-    "error"          :{},
-    "logisnotwait"   :{},
-    "no_data"        :{},
-            }
 
 class logmanagement(object):
     def __init__(self,log="title_log.pkl"):
@@ -66,6 +66,7 @@ db = dbmanager(root=cf.cloud_path,db="stocktable")
 stocktable = db.alltableget(filename="stocktable")
 stocktable.index = stocktable["代號"].str.strip() + "_" + stocktable["名稱"].str.strip()
 stocktable = stocktable.loc[:,["product"]]
+
 data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["信用額度總量管制"],file_include=[".pkl"])
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
@@ -125,12 +126,8 @@ for file_path in data_dir["path"]:
             df.columns = ",".join(df.columns).replace("今日餘額","今日融券餘額").replace("今日融券餘額","今日融資餘額",1).split(",")
             df.columns = ",".join(df.columns).replace("限額","融券限額").replace("融券限額","融資限額",1).split(",")
         elif "信用額度總量管制餘額表" in title:
-            if "當日賣出" in df:
-                df.columns = ",".join(df.columns).replace("賣出","融券賣出").replace("買進","融券買進").split(",")
-            else:
-                df.columns = ",".join(df.columns).replace("賣出", "當日賣出").replace("買進", "融券買進").replace("當日賣出","融券賣出",1).split(",")
-            if "當日餘額" not in df:
-                df.columns = ",".join(df.columns).replace("今日餘額", "當日餘額").replace("當日餘額", "今日餘額",1).split(",")
+            df.drop(["前日餘額","賣出","買進","現券","今日餘額","限額"],errors="ignore",inplace=True)
+            df.columns = [_.replace("賣出","借券賣出").replace("餘額","借券餘額").replace("限額","借券限額") for _ in df ]
             
         unit=1
         if title in ["信用交易統計","融資融券彙總"]:
@@ -143,9 +140,7 @@ for file_path in data_dir["path"]:
             pk="date"
         elif "日期" in df :
             df.loc[:,"日期"] = df["日期"].map(lambda x : roctoad(x,method="realtime"))
-        # df.index.name="index"
-        if "信用額度總量管制" in title:
-            df = df.iloc[:,6:]
+        
         if "最近一次上市公司申報外資持股異動日期" in df:
             df.loc[:, "最近一次上市公司申報外資持股異動日期"] = df["最近一次上市公司申報外資持股異動日期"].map(lambda x: roctoad(x, method="realtime"))
         if "最近一次上市公司申報外資及陸資持股異動日期" in df:
