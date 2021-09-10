@@ -343,7 +343,15 @@ def addcolumns(df):
         df.replace("\)", "", regex=True, inplace=True)
         df = turntofloat(df, col=["整體市場", "整體市場漲停", "股票", "股票漲停"])
     return df
-        
+    
+def stocktable_combine(df=pd.DataFrame([]),stocktable=pd.DataFrame([])):
+    if "代號" in df and "名稱" in df:
+        df.index = df["代號"].str.strip() + "_" + df["名稱"].str.strip()
+    df = df.join(stocktable.loc[:, [_ for _ in stocktable if _ not in df]])
+    df.dropna(axis=1, how="all", inplace=True)
+    return df
+    
+    
 if __name__ == '__main__' :
     l=[]
     # l = crawlerdictodf()

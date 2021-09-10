@@ -12,7 +12,7 @@ from os.path import join,exists
 from traceback import format_exc
 import pandas as pd
 from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append, path_walk, fileload, roctoad, isnumber
-from packet import crawlerdictodf, get_title, get_item, search_title,rename_dic
+from packet import  search_title,rename_dic,stocktable_combine
 from steventricks.db import dbmanager 
 
 key_dict = {
@@ -61,12 +61,12 @@ gc.disable()
 debug=False
 m=logmanagement()
 m.log
-db=dbmanager(root=cf.cloud_path,db="stocktable")
-stocktable=db.alltableget(filename="stocktable")
-stocktable.reset_index(inplace=True,drop=True)
-stocktable.index = stocktable["代號"]+"_"+stocktable["名稱"]
 
-data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=[],file_include=[".pkl"])
+db = dbmanager(root=cf.cloud_path,db="stocktable")
+stocktable = db.alltableget(filename="stocktable")
+stocktable.index = stocktable["代號"].str.strip() + "_" + stocktable["名稱"].str.strip()
+stocktable = stocktable.loc[:,["product"]]
+data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["信用額度總量管制"],file_include=[".pkl"])
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
     filename,data=data[0],data[1]
@@ -143,9 +143,7 @@ for file_path in data_dir["path"]:
             pk="date"
         elif "日期" in df :
             df.loc[:,"日期"] = df["日期"].map(lambda x : roctoad(x,method="realtime"))
-            
-        df.index.name="index"
-        
+        # df.index.name="index"
         if "信用額度總量管制" in title:
             df = df.iloc[:,6:]
         if "最近一次上市公司申報外資持股異動日期" in df:
@@ -154,9 +152,7 @@ for file_path in data_dir["path"]:
             df.loc[:, "最近一次上市公司申報外資及陸資持股異動日期"] = df["最近一次上市公司申報外資及陸資持股異動日期"].map(lambda x: roctoad(x, method="realtime"))
         if "財報年/季" in df:
             df.loc[:, "財報年/季"] = df["財報年/季"].map(lambda x: roctoad(x, method="realtime"))
-            
-        df=df.join(stocktable.loc[:,[_ for _ in stocktable if _ not in df]])
-        df.dropna(axis=1,how="all",inplace=True)
+        
         try:
 # 開始分為stock 和 market兩種方式來儲存==========================
             print(df)
@@ -176,15 +172,15 @@ for file_path in data_dir["path"]:
                 db.to_sql_ex(df=df, table=title, pk="日期")
 
             else :
+                df = stocktable_combine(df=df, stocktable=stocktable)
                 for product in df["product"].unique():
                     if pd.isnull(product) is True : product = "無細項分類商品"
                     db.database_change(root=join(cf.cloud_path,"warehouse"),newdatabase=product)
                     for stock in df.loc[df["product"]==product,:].index:
                         print("\r{}".format(stock),end="")
                         newdf = df.loc[df.index.isin([stock]),:]
-                        db.to_sql_ex(df=newdf,table=stock,pk=pk)
-                    
-
+                        db.to_sql_ex(df=newdf.drop("product",axis=1),table=stock,pk=pk)
+        
 # 存檔完成進行log改寫=========================================
             m.log_append(key=title,value=filename)
             picklesave(m.log_path,m.log,cover=True)
@@ -198,6 +194,6 @@ for file_path in data_dir["path"]:
             print(format_exc())
             print("Unknowned error")
             print(e)
-            # break
-            sys.exit()
-    # break
+            break
+            # sys.exit()
+    break
