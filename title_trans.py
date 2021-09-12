@@ -67,7 +67,7 @@ stocktable = db.alltableget(filename="stocktable")
 stocktable.index = stocktable["代號"].str.strip() + "_" + stocktable["名稱"].str.strip()
 stocktable = stocktable.loc[:,["product"]]
 
-data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["信用額度總量管制"],file_include=[".pkl"])
+data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["每日收盤行情"],file_include=[".pkl"])
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
     filename,data=data[0],data[1]
@@ -79,9 +79,9 @@ for file_path in data_dir["path"]:
         print(col,value,title)
         value = data[value]
 # 資料是空的就直接排除=========================================
-        if not value : continue
+        if not value :
+            continue
 # 找出正確的title放到savename==================================
-        print(data["title"])
         title= search_title(item=item,title=data[title])
         if len(title) == 1 :
             title=title[0]
@@ -101,7 +101,11 @@ for file_path in data_dir["path"]:
             print("unexpected error")
             continue
 # 沒有在titlezip代表log裡面已經有資料了，不用再找第二次，所以跳出
+
+        print(title,"=========================")
         if m.log_exists(key=title,value=filename) is True:continue
+
+        print(title,"2=========================")
         col = data[col]
         df = pd.DataFrame(value)
 # 欄位排序有錯的直接把非文字的數值排除掉========================
@@ -119,6 +123,12 @@ for file_path in data_dir["path"]:
         df.replace(",","",regex=True,inplace=True)
         df = df.rename(columns=rename_dic)
         df.loc[:,"date"]=pd.to_datetime(crawldate)
+
+        print(title,"3=========================")
+
+        if "漲跌" in title:
+            raise  KeyboardInterrupt
+        
         
         if "融資融券" in title :
             df.columns = ",".join(df.columns).replace("買進","融券買進").replace("融券買進","融資買進",1).split(",")
@@ -169,7 +179,7 @@ for file_path in data_dir["path"]:
             df=turntofloat(df,col=["開盤指數","最低指數","最高指數","收盤指數"])
         
         # 變更index================================================
-        print(df)
+        # print(df)
         if "代號" in df and "名稱" in df :
             df.index = df["代號"].str.strip()+"_"+df["名稱"].str.strip()
             pk="date"
@@ -182,7 +192,7 @@ for file_path in data_dir["path"]:
             df.loc[:, "最近一次上市公司申報外資及陸資持股異動日期"] = df["最近一次上市公司申報外資及陸資持股異動日期"].map(lambda x: roctoad(x, method="realtime"))
         if "財報年/季" in df:
             df.loc[:, "財報年/季"] = df["財報年/季"].map(lambda x: roctoad(x, method="realtime"))
-        
+
         try:
 # 開始分為stock 和 market兩種方式來儲存==========================
             print(df)
@@ -224,6 +234,5 @@ for file_path in data_dir["path"]:
             print(format_exc())
             print("Unknowned error")
             print(e)
-            break
             # sys.exit()
-    break
+    # break
