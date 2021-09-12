@@ -11,6 +11,7 @@ import sys
 from os.path import join,exists
 from traceback import format_exc
 import pandas as pd
+# import mighty
 from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append, path_walk, fileload, roctoad, isnumber
 from packet import  search_title,rename_dic,stocktable_combine
 from steventricks.db import dbmanager 
