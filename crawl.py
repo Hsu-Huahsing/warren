@@ -133,8 +133,9 @@ if __name__ == "__main__":
     m = management()
     m.mall
     log = m.log
-    crawldata = dataframe_zip(df=log, col_include=m.item, key_include=["wait"], time=False)
-    # "badconnection","closed","jsonerror"
+    log=log["2021-1-1":]
+    crawldata = dataframe_zip(df=log, col_include=m.item, key_include=["closed"], time=False)
+    # "badconnection","closed","jsonerror" , "wait"
     multilis = multilisforcrawl(crawldata)
     if stocktable_renew == True:
         stocktablecrawl(timeout=15)
