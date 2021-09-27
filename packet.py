@@ -8,7 +8,7 @@ Created on Mon Jul 20 21:13:14 2020
 import configuration as cf
 import random
 from steventricks.mighty import make_url,turntofloat
-from steventricks.db import dbmanager
+from steventricks.mysqldb import dbmanager
 from copy import deepcopy
 from datetime import datetime
 import pandas as pd
@@ -206,17 +206,22 @@ rename_dic={
     }
 
 def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
-    dm = dbmanager(root=cf.cloud_path,db="stocktable")
+    dm = dbmanager(root="root")
     for _ in range(1,maxn,1):
-        df=make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"])
+        df = make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"])
         df = pd.DataFrame(df[0])
+        
         if df.empty is True :
             print("stocktable No:{} ___empty crawled result".format(_))
             continue
+            
         df=df.reset_index(drop=True).reset_index()
+        
         tablename= [list(set(_)) for _ in df.values if len(set(_))==2]
-        df.drop(["index","Unnamed: 6"],errors="ignore",axis=1,inplace=True)
-        df.loc[:,"date"]=pd.to_datetime(cf.now)
+        
+        df.drop(["index","Unnamed: 6"],errors = "ignore",axis=1,inplace=True)
+        df.loc[:,"date"] = pd.to_datetime(cf.now,infer_datetime_format=True)
+        
         if "指數代號及名稱" in df:
             df.loc[:,["代號","名稱"]] = df.loc[:,"指數代號及名稱"].str.split(" |　",expand=True,n=1).rename(columns={0:"代號",1:"名稱"})
         elif "有價證券代號及名稱" in df:
@@ -226,6 +231,8 @@ def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
             print("no primary key")
             print(_)
             continue
+        # 以上整理primary key
+        
         if len(tablename)>1:
             name_index=[(a,b) for a,b in zip(tablename,tablename[1:]+[[None]])]
         elif len(tablename)==1:
@@ -235,12 +242,16 @@ def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
             df.loc[:, "product"] = table
             dm.to_sql_ex(df=df,table=table,pk=pk)
             continue
+        #利用同一個row的重複值來判斷商品項目名稱，同時判斷儲存的方式
         
         for nameindex in name_index:
             start=nameindex[0]
             end=nameindex[1]
+            
             startname,startint=[_ for _ in start if isinstance(_,str) is True][0],[_ for _ in start if isinstance(_,str) is False][0]
             endint=[_ for _ in end if isinstance(_,str) is False][0]
+            # 先抓出起始的值和尾端值然後用slice來做切割，把資料分段儲存進table
+            
             if end[0] is None:
                 df_sub = df[startint+1:]
             else:
