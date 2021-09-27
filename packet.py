@@ -206,7 +206,7 @@ rename_dic={
     }
 
 def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
-    dm = dbmanager(root="root")
+    dm = dbmanager(user="root")
     for _ in range(1,maxn,1):
         df = make_url(url=stocktable["url"].format(_),timeout=timeout,typ="html",charset=stocktable["charset"])
         df = pd.DataFrame(df[0])
