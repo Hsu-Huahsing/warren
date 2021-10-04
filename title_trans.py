@@ -14,7 +14,7 @@ import pandas as pd
 # import mighty
 from steventricks.mighty import pickleload, picklesave,  turntofloat, df_append, path_walk, fileload, roctoad, isnumber
 from packet import  search_title,rename_dic,stocktable_combine
-from steventricks.db import dbmanager 
+from steventricks.mysqldb import dbmanager
 
 key_dict = {
     "col": ["field"],
@@ -63,12 +63,17 @@ debug=False
 m=logmanagement()
 m.log
 
-db = dbmanager(root=cf.cloud_path,db="stocktable")
-stocktable = db.alltableget(filename="stocktable")
+dm = dbmanager(user = "root")
+dm.choosedb(db="stocktable")
+stocktable = pd.DataFrame()
+for table in dm.dbinfo["tablelist"]:
+    temp = dm.read_sql_ex(table=table,sql="select * from {table}".format(table=table))
+    stocktable = stocktable.append(temp)
+    
 stocktable.index = stocktable["代號"].str.strip() + "_" + stocktable["名稱"].str.strip()
 stocktable = stocktable.loc[:,["product"]]
 
-data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=["每日收盤行情"],file_include=[".pkl"])
+data_dir=path_walk(join(cf.cloud_path,"warehouse"),dir_include=[],file_include=[".pkl"])
 for file_path in data_dir["path"]:
     data = fileload(file_path)[0]
     filename,data=data[0],data[1]
@@ -127,9 +132,8 @@ for file_path in data_dir["path"]:
 
         print(title,"3=========================")
 
-        if "漲跌" in title:
-            raise  KeyboardInterrupt
-        
+        # if "漲跌" in title:
+        #     raise  KeyboardInterrupt
         
         if "融資融券" in title :
             df.columns = ",".join(df.columns).replace("買進","融券買進").replace("融券買進","融資買進",1).split(",")
@@ -201,26 +205,26 @@ for file_path in data_dir["path"]:
             print(item)
             print(df.columns)
             if title in ["三大法人買賣金額統計表","信用交易統計","價格指數(臺灣證券交易所)","價格指數(跨市場)","價格指數(臺灣指數公司)","報酬指數(臺灣證券交易所)","報酬指數(跨市場)","報酬指數(臺灣指數公司)","大盤統計資訊","漲跌證券數合計"]:
-                db.database_change(root=join(cf.cloud_path, "warehouse"), newdatabase="market")
-                db.to_sql_ex(df=df, table=title)
+                dm.choosedb(db="market")
+                dm.to_sql_ex(df=df, table=title)
                 
             elif title in ["當日沖銷交易統計資訊"]:
-                db.database_change(root=join(cf.cloud_path, "warehouse"), newdatabase="market")
-                db.to_sql_ex(df=df, table=title, pk="date")
+                dm.choosedb(db="market")
+                dm.to_sql_ex(df=df, table=title, pk="date")
                 
             elif "日期" in df:
-                db.database_change(root=join(cf.cloud_path, "warehouse"), newdatabase="market")
-                db.to_sql_ex(df=df, table=title, pk="日期")
+                dm.choosedb(db="market")
+                dm.to_sql_ex(df=df, table=title, pk="日期")
 
             else :
                 df = stocktable_combine(df=df, stocktable=stocktable)
                 for product in df["product"].unique():
                     if pd.isnull(product) is True : product = "無細項分類商品"
-                    db.database_change(root=join(cf.cloud_path,"warehouse"),newdatabase=product)
+                    dm.choosedb(db=product)
                     for stock in df.loc[df["product"]==product,:].index:
                         print("\r{}".format(stock),end="")
                         newdf = df.loc[df.index.isin([stock]),:]
-                        db.to_sql_ex(df=newdf.drop("product",axis=1),table=stock,pk=pk)
+                        dm.to_sql_ex(df=newdf.drop("product",axis=1),table=stock,pk=pk)
         
 # 存檔完成進行log改寫=========================================
             m.log_append(key=title,value=filename)
