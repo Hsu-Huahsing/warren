@@ -14,6 +14,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 now = datetime.now().date()
+
 crawlerdic={
     "每日收盤行情":{
         "m":"market",
