@@ -5,10 +5,7 @@ Created on Mon Jul 20 21:13:14 2020
 
 @author: stevenhsu
 """
-import configuration as cf
 import random
-from steventricks.mighty import make_url,turntofloat
-from steventricks.mysqldb import dbmanager
 from copy import deepcopy
 from datetime import datetime
 import pandas as pd
@@ -225,7 +222,7 @@ colname_dic={
     "有價證券名稱"                             :"名稱",
 }
 
-def stocktablecrawl(maxn=13,timeout=180,pk="ISINCode"):
+def stocktablecrawl( maxn = 13 , timeout = 180 , pk = "ISINCode" ) :
     dm = dbmanager(user="root")
     dm.choosedb(db="stocktable")
     
