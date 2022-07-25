@@ -16,6 +16,7 @@ import pandas as pd
 from traceback import format_exc
 import sys
 
+
 def parser(crawlerdic={},timeout=20 ):
 # example : date == "2020-3-10"
     crawldate = crawlerdic["crawldate"]
