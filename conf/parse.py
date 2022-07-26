@@ -1,12 +1,7 @@
 
 
 title_dic = {
-    "每日收盤行情": ["價格指數(臺灣證券交易所)", "價格指數(跨市場)", "價格指數(臺灣指數公司)", "報酬指數(臺灣證券交易所)", "報酬指數(跨市場)", "報酬指數(臺灣指數公司)", "大盤統計資訊", "漲跌證券數合計", "每日收盤行情"],
-    '信用交易統計': ["融資融券彙總", "信用交易統計"],
-    '市場成交資訊': ['市場成交資訊'],
-    '三大法人買賣金額統計表': ['三大法人買賣金額統計表'],
-    '三大法人買賣超日報': ["三大法人買賣超日報"],
-    '個股日本益比、殖利率及股價淨值比': ['個股日本益比、殖利率及股價淨值比'],
+
     '信用額度總量管制餘額表': ['信用額度總量管制餘額表'],
     '當日沖銷交易標的及成交量值': ["當日沖銷交易標的及成交量值", "當日沖銷交易統計資訊"],
     '每月當日沖銷交易標的及統計': ['每月當日沖銷交易標的及統計'],
@@ -18,9 +13,10 @@ data_dic = {
     "每日收盤行情": {
         "m": "market",
         "freq": "D",
-        "dname": "date",
+        'date_name': "date",
         "date_min": "2004-2-11",
         "url": r"https://www.twse.com.tw/exchangeReport/MI_INDEX?",
+        'sub_item': ["價格指數(臺灣證券交易所)", "價格指數(跨市場)", "價格指數(臺灣指數公司)", "報酬指數(臺灣證券交易所)", "報酬指數(跨市場)", "報酬指數(臺灣指數公司)", "大盤統計資訊", "漲跌證券數合計", "每日收盤行情"],
         "payload": {
             "response": "json",
             "date": "",
@@ -31,9 +27,10 @@ data_dic = {
     "信用交易統計": {
         "m": "market",
         "freq": "D",
-        "dname": "date",
+        'date_name': "date",
         "date_min": "2001-1-1",
         "url": r"https://www.twse.com.tw/exchangeReport/MI_MARGN?",
+        'sub_item': ["融資融券彙總", "信用交易統計"],
         "payload": {
             "response": "json",
             "date": "",
@@ -44,8 +41,9 @@ data_dic = {
         "m": "market",
         "freq": "M",
         "date_min": "1990-1-4",
-        "dname": "date",
+        'date_name': "date",
         "url": r"https://www.twse.com.tw/exchangeReport/FMTQIK?",
+        'sub_item': ['市場成交資訊'],
         "payload": {
             "response": "json",
             "date": "",
@@ -56,8 +54,9 @@ data_dic = {
         "m": "market",
         "freq": "D",
         "date_min": "2004-4-7",
-        "dname": "dayDate",
+        'date_name': "dayDate",
         "url": r"https://www.twse.com.tw/fund/BFI82U?",
+        'sub_item': ['三大法人買賣金額統計表'],
         "payload": {
             "response": "json",
             "dayDate": "",
@@ -69,8 +68,9 @@ data_dic = {
         "m": "market",
         "freq": "D",
         "date_min": "2012-5-2",
-        "dname": "date",
+        'date_name': "date",
         "url": r"https://www.twse.com.tw/fund/T86?",
+        'sub_item': ["三大法人買賣超日報"],
         "payload": {
             "response": "json",
             "date": "",
@@ -81,8 +81,9 @@ data_dic = {
         "m": "stock",
         "freq": "D",
         "date_min": "2012-5-2",
-        "dname": "date",
+        'date_name': "date",
         "url": r"https://www.twse.com.tw/exchangeReport/BWIBBU_d?",
+        'sub_item': ['個股日本益比、殖利率及股價淨值比'],
         "payload": {
             "response": "json",
             "date": "",
@@ -94,7 +95,7 @@ data_dic = {
         "m": "stock",
         "freq": "D",
         "date_min": "2005-7-1",
-        "dname": "date",
+        'date_name': "date",
         "url": r"https://www.twse.com.tw/exchangeReport/TWT93U?",
         "payload": {
             "response": "json",
@@ -106,7 +107,7 @@ data_dic = {
         "m": "stock",
         "freq": "D",
         "date_min": "2014-1-6",
-        "dname": "date",
+        'date_name': "date",
         "url": r"https://www.twse.com.tw/exchangeReport/TWTB4U?",
         "payload": {
             "response": "json",
@@ -120,7 +121,7 @@ data_dic = {
         "m": "market",
         "freq": "M",
         "date_min": "2014-1-6",
-        "dname": "date",
+        'date_name': "date",
         "url": "https://www.twse.com.tw/exchangeReport/TWTB4U2?",
         "payload": {
             "response": "json",
@@ -133,7 +134,7 @@ data_dic = {
         "m": "stock",
         "freq": "D",
         "date_min": "2004-2-11",
-        "dname": "date",
+        'date_name': "date",
         "url": "https://www.twse.com.tw/fund/MI_QFIIS?",
         "payload": {
             "response": "json",
@@ -146,7 +147,7 @@ data_dic = {
         "m": "market",
         "freq": "D",
         "date_min": "1999-1-5",
-        "dname": "date",
+        'date_name': "date",
         "url": "https://www.twse.com.tw/indicesReport/MI_5MINS_HIST?",
         "payload": {
             "response": "json",
